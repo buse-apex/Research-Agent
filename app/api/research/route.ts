@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ---- CALL 2: no tools, temperature 0, prefilled "{" — reliable JSON ----
+    // ---- CALL 2: no tools; converts the dossier into the brief JSON ----
     const formatPrompt = buildFormatPrompt({
       schoolName,
       location,
@@ -96,10 +96,7 @@ export async function POST(req: NextRequest) {
     const format = await anthropic.messages.create({
       model: RESEARCH_MODEL,
       max_tokens: 16000,
-      messages: [
-        { role: "user", content: formatPrompt },
-        { role: "assistant", content: "{" }, // prefill: forces output to start as JSON
-      ],
+      messages: [{ role: "user", content: formatPrompt }],
     });
 
     if (format.stop_reason === "max_tokens") {
@@ -110,12 +107,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const text =
-      "{" +
-      format.content
-        .filter((block: any) => block.type === "text")
-        .map((block: any) => block.text)
-        .join("\n");
+    const text = format.content
+      .filter((block: any) => block.type === "text")
+      .map((block: any) => block.text)
+      .join("\n");
 
     // Parse JSON from the response (multi-stage: parse → extract → sanitize → model repair)
     const parsed = await parseModelJson(text);

@@ -28,10 +28,10 @@ export default async function BriefPage({ params }: { params: { id: string } }) 
 
       <section style={{ marginBottom: 40 }}>
         <div className="hero-kicker">Archived Brief</div>
-        <h1 style={{ fontSize: "clamp(36px, 4.5vw, 56px)" }}>
+        <h1>
           {brief.school_name}
         </h1>
-        <p style={{ fontFamily: "Source Serif 4, serif", fontStyle: "italic", fontSize: 17, color: "#3A4655", marginTop: 12 }}>
+        <p style={{ fontSize: 15, color: "#4A5568", marginTop: 10 }}>
           {brief.school_location} · {new Date(brief.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
           {brief.franchisee_name ? ` · Prepared for ${brief.franchisee_name}` : ""}
         </p>
