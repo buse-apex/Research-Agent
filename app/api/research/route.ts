@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
       {
         type: "web_search_20250305",
         name: "web_search",
-        max_uses: 12, // enough for 3 research phases, bounds cost per run
+        max_uses: 8, // enough for 3 research phases, bounds cost and rate-limit pressure
       } as any,
     ];
 
@@ -147,6 +147,15 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     console.error("Research error:", err);
     const msg = String(err?.message || "");
+    if (err?.status === 429 || msg.includes("rate_limit")) {
+      return NextResponse.json(
+        {
+          error:
+            "The Apex API rate limit was reached. Wait a couple of minutes and try again. If this keeps happening, the organization's rate limit tier needs to be raised at console.anthropic.com/settings/limits.",
+        },
+        { status: 429 }
+      );
+    }
     const friendly =
       msg.includes("JSON") || msg.includes("Unexpected token") || msg.includes("position")
         ? "The brief could not be assembled this time. Please run the research again."

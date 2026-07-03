@@ -88,38 +88,44 @@ Update your findings with anything the verification pass adds or corrects.
 
 Then output a RESEARCH DOSSIER in plain text with EXACTLY these headed sections:
 
-SOURCES
-For each source you actually read: title, URL, whether it was a deep read, and one sentence on what it revealed.
-
-VERIFICATION SUMMARY
-2-3 sentences on what your verification pass added or corrected.
+FACT STRIP
+Grade span, approximate enrollment, district name, current fundraiser (if visible), and the likely decision path: does fundraising here run through the principal or the PTA? Cite the evidence for the decision path.
 
 THE READ
-3-4 sentences: the school's character, energy, and current moment. Confident editorial prose.
+3-4 sentences: the school's character, energy, and current moment. Confident editorial prose. Weave in what their fundraising money is for, if known.
 
 PULL QUOTE
 The single most useful direct quote or characterization from your research, with its specific source.
 
-RECENT NEWS
-Specific recent events, achievements, or posts worth referencing, with dates where known.
+CHANGE SIGNALS (WHY NOW)
+Any leadership transitions, new PTA officers, new roles, enrollment growth, or other changes that make this the right moment for outreach. Say "none found" if none.
 
-STUDENT MOMENT
-A specific student or classroom moment that humanizes outreach.
+VENDOR HISTORY
+Do they use or have they used an outside fundraising vendor (especially Boosterthon)? Current vendor, past vendor, or no vendor history. This determines the pitch angle.
 
-NAMED CONTACTS
-EVERY named person found: principal, AP, PTA/PTO president, ALL board officers and co-chairs, key teachers. One per line as "Name : Role". Be exhaustive. Never write "not available" if a source you cited contains names.
+MONEY TRAIL
+What their fundraising money bought in the past or is earmarked for now (playground, technology, field trips, etc.), with sources.
 
-SCHOOL VALUES
-The 2-3 values or character traits the school actively promotes, quoting their actual phrases.
+NAMED PEOPLE
+EVERY named person found: principal, AP, PTA/PTO president, ALL board officers and co-chairs, key teachers. One per line as "Name : Role : tenure note if known (e.g. new this year)". Be exhaustive. Never write "not available" if a source you cited contains names.
 
-FUNDRAISING PICTURE
-What fundraiser they currently run (with source), 3 signals from the research, and the single best strategic angle for Apex outreach with reasoning.
+RECENT MOMENTS
+Specific recent events, achievements, student moments, or news worth referencing, with dates where known.
 
-VOICE
-How this school talks (1-2 sentences), 3-6 specific words or phrases they use, and what NOT to say.
+THEIR WORDS
+The actual phrases the school uses about itself: mottos, values language, community nicknames.
+
+CALENDAR AND TIMING
+Their fundraising window (fall or spring), PTA meeting schedule if public, and upcoming events on their calendar.
 
 GRADE LEVEL
 Elementary, middle, or unclear, with the evidence.
+
+SOURCES
+For each source you actually read: title, URL, and whether it was a deep read.
+
+VERIFICATION SUMMARY
+One sentence on what your verification pass added or corrected.
 
 RULES:
 - Only include facts you can trace to a source you read. Never invent names, quotes, or events.
@@ -154,7 +160,7 @@ PITCH BLOCK A: "Apex is a 2-week program where our local team handles everything
 
 PITCH BLOCK B: "Apex is fully managed from Day One. Our local team runs the whole 2-week program, from the kickoff pep rally to the Fun Run event day, so the PTA doesn't take on any extra work. Schools consistently raise 2 to 3 times more than they would with a traditional fundraiser, and it ends up being the biggest fundraiser of the year for most of them. The students love it. The energy carries through the rest of the school year. And built into all of it is a leadership and character-building curriculum that shapes how kids show up after the program ends."
 
-SHORT PITCH BLOCK (both follow-up emails, verbatim): "Apex schools consistently raise 2 to 3 times more than traditional fundraisers, and it becomes the biggest fundraiser of the year for most of them. Our local team handles the entire 2-week program, so there's no added work for the PTA. The leadership and character curriculum is built in."
+SHORT PITCH BLOCK (the follow-up email, verbatim): "Apex schools consistently raise 2 to 3 times more than traditional fundraisers, and it becomes the biggest fundraiser of the year for most of them. Our local team handles the entire 2-week program, so there's no added work for the PTA. The leadership and character curriculum is built in."
 
 MIDDLE SCHOOL ADAPTATION: If the dossier says the school is grades 6-8, in the pitch blocks replace "Fun Run" with "Color Games" and remove "classroom visits" (middle school uses lunch-period rallies, not classroom lessons). Otherwise pitch language is identical.
 
@@ -168,68 +174,55 @@ ${dossier}
 Return ONLY valid JSON (no markdown fences, no preamble) with this exact structure:
 
 {
-  "sources": [
-    { "title": "Page or post title", "url": "https://...", "what_it_revealed": "1 specific sentence on what this source contributed", "deep_read": true }
-  ],
-  "verification_summary": "2-3 sentences describing what the verification pass added or corrected.",
-  "the_read": "A 3-4 sentence narrative read of this school's character, energy, and current moment. Confident editorial prose. No em dashes.",
+  "fact_strip": {
+    "grade_span": "e.g. PreK-5",
+    "enrollment": "e.g. ~640 students, or empty string if unknown",
+    "district": "district name, or empty string",
+    "current_fundraiser": "e.g. PTA catalog sale (fall), or 'none visible'",
+    "decision_path": "e.g. PTA-led, principal signs off"
+  },
+  "the_read": "3-4 sentence narrative read of the school: character, energy, current moment, and what their fundraising money is for if known. Confident editorial prose. No em dashes.",
   "pull_quote": {
     "text": "The single most useful direct quote or characterization from the research.",
     "attribution": "Specific source of the quote"
   },
-  "hooks": [
-    { "label": "RECENT NEWS", "content": "Specific recent event, achievement, or post worth referencing. Include date if known.", "color": "orange" },
-    { "label": "STUDENT MOMENT", "content": "A specific student or classroom moment that humanizes outreach.", "color": "blue" },
-    { "label": "NAMED CONTACTS", "content": "List EVERY named person from the dossier. Format as: '[Name] : [Role]' separated by \\n. Be exhaustive.", "color": "deep" },
-    { "label": "SCHOOL VALUES", "content": "The 2-3 values or character traits the school actively promotes. Quote the actual phrases they use.", "color": "dark" }
-  ],
-  "fundraising": {
-    "current_program": "What fundraiser they appear to currently run, if visible. Cite where found.",
-    "signals": ["Signal 1 with source", "Signal 2", "Signal 3"],
-    "angle": "The single best angle for Apex outreach. 3-4 sentences of strategic reasoning."
-  },
-  "voice": {
-    "tone": "How this school talks: 1-2 sentences of analysis.",
-    "vocabulary": ["3-6 specific words or phrases the school uses"],
-    "avoid": "What NOT to say. 1-2 sentences with reasoning."
-  },
+  "angle": "The strategy paragraph, 4-6 sentences. MUST cover: (1) the vendor situation and what pitch this implies (burden-relief if no vendor, switch pitch on curriculum depth and local ownership if Boosterthon, complement pitch if DIY), (2) the why-now signal if one exists, (3) WHO to approach first, by name, and who is the second conversation, (4) the goal or project to tie outreach to, from the money trail.",
   "emails": [
     {
       "type": "Cold introduction (10-80-10)",
-      "subject": "Subject line referencing ONE specific verified detail from the dossier. Short and specific.",
-      "body": "Structure: (1) Greeting: 'Hi Principal [Last Name],' if found, else 'Hi Principal,'. (2) OPENER (25-40 words): one-sentence intro of ${franchiseeLabel}, then ONE specific verified personalization reference from the dossier. (3) PITCH BLOCK A or B verbatim (adapt for middle school if needed). (4) ASK: one short sentence requesting a 15-minute call. (5) SIGN-OFF: ${franchiseeLabel} on separate lines if it contains a comma. (6) P.S. (20-35 words): one additional DIFFERENT verified detail from the dossier. Skip the P.S. if only one verified detail exists. No em dashes."
+      "subject": "Subject line referencing ONE specific verified detail. Short and specific.",
+      "body": "Structure: (1) Greeting to the person the angle says to approach FIRST, by name. (2) OPENER (25-40 words): one-sentence intro of ${franchiseeLabel}, then ONE specific verified personalization reference, ideally from the money trail or a change signal. (3) PITCH BLOCK A or B verbatim (adapt for middle school if needed). (4) ASK: one short sentence requesting a 15-minute call. (5) SIGN-OFF: ${franchiseeLabel} on separate lines if it contains a comma. (6) P.S. (20-35 words): one additional DIFFERENT verified detail. Skip the P.S. if only one verified detail exists. No em dashes."
     },
     {
-      "type": "Follow-up (story-led, 10-short-10)",
-      "subject": "Different subject angle, also specific to school. Short.",
-      "body": "Structure: (1) Greeting. (2) OPENER (15-30 words): light callback ('Following up on my note from last week.'), then ONE different verified detail leaning on the school's character/values angle. (3) SHORT PITCH BLOCK verbatim. (4) ASK: one sentence. (5) SIGN-OFF. (6) P.S. (optional, 20-30 words): one more verified detail if available, otherwise skip. No em dashes."
-    },
-    {
-      "type": "Follow-up (results-led, 10-short-10)",
-      "subject": "Direct subject line referencing their fundraising context if found",
-      "body": "Structure: (1) Greeting. (2) OPENER (15-30 words): brief recap line ('Quick last note.'), then ONE verified detail connected to their fundraising context if found. (3) SHORT PITCH BLOCK verbatim. (4) ASK: one sentence. (5) SIGN-OFF. (6) P.S. (optional): one more verified detail, or a soft 'we book the season early, worth holding a window for next year' note if this year looks locked in. No em dashes."
+      "type": "Follow-up (10-short-10)",
+      "subject": "Different subject angle, also specific to the school. Short.",
+      "body": "Structure: (1) Greeting to the same person. (2) OPENER (15-30 words): light callback ('Following up on my note from last week.'), then ONE different verified detail. Choose the strongest remaining detail: a values/character moment or their fundraising context, whichever the dossier supports better. (3) SHORT PITCH BLOCK verbatim. (4) ASK: one sentence. (5) SIGN-OFF. (6) P.S. (optional, 20-30 words): one more verified detail, or a soft 'we book the season early, worth holding a window' note if this year looks locked in. No em dashes."
     }
   ],
   "personalization_bank": {
-    "description": "One sentence reminding the franchisee these are verified details from research they can swap into any opener or P.S.",
-    "specific_programs": ["2-6 specific programs, initiatives, or signature offerings the school runs, each a specific noun phrase"],
-    "recent_moments": ["2-6 specific recent events, achievements, or news items with approximate timing if known"],
-    "school_values_phrases": ["2-6 actual phrases the school uses about itself, quoted in their own words"],
-    "named_humans": ["2-6 specific named people with role context"],
-    "fundraising_context": ["2-6 specific verified facts about the school's fundraising situation"],
-    "opener_lines": ["3-5 ready-to-use opener lines, each 15-25 words, each using ONE verified detail, each a complete sentence ready to paste"],
-    "ps_lines": ["3-5 ready-to-use P.S. lines, each 15-30 words, each starting with 'P.S.', ready to paste"]
-  }
+    "description": "One sentence reminding the franchisee these are verified details they can swap into any opener or P.S.",
+    "named_people": ["Every named person with role and tenure note, e.g. 'Kate Delgado, Fall Fundraiser Chair (new role)'"],
+    "money_trail": ["2-6 verified facts about what their fundraising bought or is for, and their current fundraiser format"],
+    "recent_moments": ["2-6 specific recent events, achievements, or student moments with approximate timing"],
+    "their_words": ["2-6 actual phrases the school uses about itself, quoted in their own words"],
+    "calendar_timing": ["1-4 facts: fundraising window, PTA meeting schedule, upcoming events"],
+    "opener_lines": ["3-4 ready-to-use opener lines, each 15-25 words, each using ONE verified detail, complete sentences ready to paste"],
+    "ps_lines": ["2-3 ready-to-use P.S. lines, each 15-30 words, each starting with 'P.S.', ready to paste"]
+  },
+  "verification_summary": "One sentence on what the verification pass added or corrected.",
+  "sources": [
+    { "title": "Page or post title", "url": "https://...", "deep_read": true }
+  ]
 }
 
 CRITICAL RULES:
 1. NO em dashes anywhere. Use colons, periods, or restructured sentences.
 2. PROGRAM LENGTH: 2 WEEKS / 10 school days. NEVER one week.
-3. EMAIL FRAMEWORK (10-80-10): Email 1 uses PITCH BLOCK A or B verbatim. Emails 2 and 3 use the SHORT PITCH BLOCK verbatim. Do not modify the pitch blocks. Personalization lives only in the opener and P.S.
-4. ANTI-FABRICATION: Every personalization detail must come from the dossier. If a dossier section is empty, use empty arrays or state the absence plainly.
+3. EMAIL FRAMEWORK (10-80-10): Exactly TWO emails. Email 1 uses PITCH BLOCK A or B verbatim. Email 2 uses the SHORT PITCH BLOCK verbatim. Do not modify the pitch blocks. Personalization lives only in the opener and P.S.
+4. ANTI-FABRICATION: Every personalization detail must come from the dossier. If a dossier section is empty, use empty arrays or empty strings plainly. The fact_strip may contain empty strings for unknown fields.
 5. MONEY LANGUAGE: NEVER use revenue, profit, percentage, split, financial upside, or dollar amounts. ONLY the approved phrases.
 6. GRADE LEVEL: K-5 uses Fun Run pitch language. 6-8 swaps in Color Games and drops classroom visits.
-7. NAMED CONTACTS: List EVERY named person from the dossier.
+7. NAMED PEOPLE: List EVERY named person from the dossier in the bank, with tenure notes where known.
 8. JSON VALIDITY: Strictly valid JSON. Escape all double quotes inside strings as \\". Never put raw line breaks inside a string value: use \\n instead.
 9. Return ONLY the JSON object, starting with { and ending with }.`;
 }
