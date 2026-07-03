@@ -24,7 +24,6 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [briefData, setBriefData] = useState<any>(null);
-  const [briefInputs, setBriefInputs] = useState<{ schoolName: string; location: string; franchiseeName: string } | null>(null);
   const [stepIndex, setStepIndex] = useState(0);
   const stepIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [adminEmails, setAdminEmails] = useState<string[]>([]);
@@ -92,11 +91,6 @@ export default function HomePage() {
 
       const data = await res.json();
       setBriefData(data);
-      setBriefInputs({
-        schoolName: schoolName.trim(),
-        location: location.trim(),
-        franchiseeName: franchiseeName.trim(),
-      });
     } catch (err: any) {
       setError(`Something went sideways: ${err.message}. Try again.`);
     } finally {
@@ -216,9 +210,9 @@ export default function HomePage() {
       {briefData && (
         <BriefRenderer
           data={briefData}
-          schoolName={briefInputs?.schoolName || schoolName}
-          location={briefInputs?.location || location}
-          franchiseeName={briefInputs?.franchiseeName || franchiseeName}
+          schoolName={schoolName}
+          location={location}
+          franchiseeName={franchiseeName}
         />
       )}
 

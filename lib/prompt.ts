@@ -5,15 +5,8 @@ export function buildResearchPrompt(params: {
 }): string {
   const { schoolName, location, franchiseeName } = params;
   const franchiseeLabel = franchiseeName || "[Franchisee Name]";
-  const today = new Date().toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
 
-  return `Today's date is ${today}. Use it to judge what counts as recent news and the current school year.
-
-You are a research analyst for Apex Leadership Co., a K-12 school fundraising and student leadership development company. A franchisee needs deep, substantive intelligence on a specific school for cold outreach.
+  return `You are a research analyst for Apex Leadership Co., a K-12 school fundraising and student leadership development company. A franchisee needs deep, substantive intelligence on a specific school for cold outreach.
 
 YOUR TASK HAS THREE PHASES. DO NOT SKIP ANY PHASE.
 
@@ -164,6 +157,5 @@ CRITICAL RULES:
 7. GRADE LEVEL: K-5 uses Fun Run pitch language. 6-8 swaps in Color Games and drops classroom visits.
 8. PERSONALIZATION BANK: Generate substantial verified options for each subfield. More verified options is better. Fabricated options ruin the bank. If a subfield has nothing verified, return an empty array for it.
 9. NAMED CONTACTS: List EVERY named person found. Do not say "not available" if a cited source contains the information.
-10. Return ONLY the JSON object.
-11. JSON VALIDITY: The output must be strictly valid JSON. Escape all double quotes inside strings as \\". Never put raw line breaks inside a string value: use \\n instead. This applies especially to the NAMED CONTACTS hook and the personalization_bank lists.`;
+10. Return ONLY the JSON object.`;
 }

@@ -35,14 +35,13 @@ function escape(str: string): string {
   return str.replace(/—/g, ": ").replace(/–/g, ": ");
 }
 
-// For the downloaded HTML document: escape markup so scraped titles or model
-// output containing < > & " can never break (or inject into) the document.
-function htmlEscape(str: string): string {
-  return escape(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+function escapeWithBreaks(str: string): string {
+  return escape(str).split("\n").map((line, i, arr) => (
+    <span key={i}>
+      {line}
+      {i < arr.length - 1 ? <br /> : null}
+    </span>
+  )) as any;
 }
 
 export function BriefRenderer({ data, schoolName, location, franchiseeName }: BriefRendererProps) {
@@ -85,7 +84,7 @@ export function BriefRenderer({ data, schoolName, location, franchiseeName }: Br
     });
 
     const briefHtml = `<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>Research Brief: ${htmlEscape(schoolName)}</title>
+<html><head><meta charset="UTF-8"><title>Research Brief: ${escape(schoolName)}</title>
 <style>
   body { font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 740px; margin: 40px auto; padding: 0 30px; color: #1A2330; line-height: 1.6; background: #fff; }
   .header { padding-bottom: 16px; margin-bottom: 28px; border-bottom: 2px solid #E86A1F; display: flex; justify-content: space-between; align-items: baseline; }
@@ -111,36 +110,36 @@ export function BriefRenderer({ data, schoolName, location, franchiseeName }: Br
   .bank-line { background: #F6F7F9; border-left: 3px solid #E86A1F; padding: 9px 13px; margin-bottom: 7px; font-size: 13.5px; border-radius: 0 6px 6px 0; }
 </style></head><body>
 <div class="header"><div class="brand">Apex <span>Research Agent</span></div><div class="date">${today}</div></div>
-<h1>Research Brief: ${htmlEscape(schoolName)}</h1>
-<div class="meta">${htmlEscape(location)} · Prepared for ${htmlEscape(franchiseeName || "Apex Franchisee")}</div>
+<h1>Research Brief: ${escape(schoolName)}</h1>
+<div class="meta">${escape(location)} · Prepared for ${escape(franchiseeName || "Apex Franchisee")}</div>
 <h2><span class="num">1</span>What the Agent Found</h2>
-<p style="font-size: 17px; line-height: 1.6;">${htmlEscape(data.the_read || "")}</p>
-${data.verification_summary ? `<div class="verification"><strong>Verification Pass</strong>${htmlEscape(data.verification_summary)}</div>` : ""}
-${data.pull_quote ? `<div class="quote">"${htmlEscape(data.pull_quote.text)}"<div class="quote-attr">— ${htmlEscape(data.pull_quote.attribution)}</div></div>` : ""}
+<p style="font-size: 17px; line-height: 1.6;">${escape(data.the_read || "")}</p>
+${data.verification_summary ? `<div class="verification"><strong>Verification Pass</strong>${escape(data.verification_summary)}</div>` : ""}
+${data.pull_quote ? `<div class="quote">"${escape(data.pull_quote.text)}"<div class="quote-attr">— ${escape(data.pull_quote.attribution)}</div></div>` : ""}
 <h3>Sources Read</h3>
-${(data.sources || []).map(s => `<div class="source"><a href="${htmlEscape(s.url)}">${htmlEscape(s.title)}</a><br><span style="color:#3A4655;">${htmlEscape(s.what_it_revealed)}</span></div>`).join("")}
+${(data.sources || []).map(s => `<div class="source"><a href="${s.url}">${escape(s.title)}</a><br><span style="color:#3A4655;">${escape(s.what_it_revealed)}</span></div>`).join("")}
 <h2><span class="num">2</span>Personalization Hooks</h2>
-${(data.hooks || []).map(h => `<h3>${htmlEscape(h.label)}</h3><p>${htmlEscape(h.content).replace(/\n/g, "<br>")}</p>`).join("")}
+${(data.hooks || []).map(h => `<h3>${escape(h.label)}</h3><p>${escape(h.content).replace(/\n/g, "<br>")}</p>`).join("")}
 <h2><span class="num">3</span>The Fundraising Picture</h2>
-<h3>Current Program</h3><p>${htmlEscape(data.fundraising?.current_program || "")}</p>
-<h3>Signals</h3><ul>${(data.fundraising?.signals || []).map(s => `<li>${htmlEscape(s)}</li>`).join("")}</ul>
-<h3>Recommended Angle</h3><p>${htmlEscape(data.fundraising?.angle || "")}</p>
+<h3>Current Program</h3><p>${escape(data.fundraising?.current_program || "")}</p>
+<h3>Signals</h3><ul>${(data.fundraising?.signals || []).map(s => `<li>${escape(s)}</li>`).join("")}</ul>
+<h3>Recommended Angle</h3><p>${escape(data.fundraising?.angle || "")}</p>
 <h2><span class="num">4</span>Voice & Values</h2>
-<h3>How They Sound</h3><p>${htmlEscape(data.voice?.tone || "")}</p>
-<h3>Vocabulary to Mirror</h3><div class="vocab">${(data.voice?.vocabulary || []).map(v => `<span>${htmlEscape(v)}</span>`).join("")}</div>
-<h3>What to Avoid</h3><p>${htmlEscape(data.voice?.avoid || "")}</p>
+<h3>How They Sound</h3><p>${escape(data.voice?.tone || "")}</p>
+<h3>Vocabulary to Mirror</h3><div class="vocab">${(data.voice?.vocabulary || []).map(v => `<span>${escape(v)}</span>`).join("")}</div>
+<h3>What to Avoid</h3><p>${escape(data.voice?.avoid || "")}</p>
 <h2><span class="num">5</span>Email Drafts</h2>
-${(data.emails || []).map((e, i) => `<div class="email"><div class="email-type">${i + 1} · ${htmlEscape(e.type)}</div><div class="email-subject">Subject: ${htmlEscape(e.subject)}</div><div class="email-body">${htmlEscape(e.body)}</div></div>`).join("")}
+${(data.emails || []).map((e, i) => `<div class="email"><div class="email-type">${i + 1} · ${escape(e.type)}</div><div class="email-subject">Subject: ${escape(e.subject)}</div><div class="email-body">${escape(e.body)}</div></div>`).join("")}
 ${data.personalization_bank ? `
 <h2>6 · Personalization Bank</h2>
-${data.personalization_bank.description ? `<p style="font-size:13px;color:#4A5568;">${htmlEscape(data.personalization_bank.description)}</p>` : ""}
-${(data.personalization_bank.specific_programs || []).length ? `<h3>Specific Programs &amp; Initiatives</h3><ul>${(data.personalization_bank.specific_programs || []).map(x => `<li>${htmlEscape(x)}</li>`).join("")}</ul>` : ""}
-${(data.personalization_bank.recent_moments || []).length ? `<h3>Recent Moments &amp; Events</h3><ul>${(data.personalization_bank.recent_moments || []).map(x => `<li>${htmlEscape(x)}</li>`).join("")}</ul>` : ""}
-${(data.personalization_bank.school_values_phrases || []).length ? `<h3>School Values (Their Words)</h3><ul>${(data.personalization_bank.school_values_phrases || []).map(x => `<li>${htmlEscape(x)}</li>`).join("")}</ul>` : ""}
-${(data.personalization_bank.named_humans || []).length ? `<h3>Named People to Reference</h3><ul>${(data.personalization_bank.named_humans || []).map(x => `<li>${htmlEscape(x)}</li>`).join("")}</ul>` : ""}
-${(data.personalization_bank.fundraising_context || []).length ? `<h3>Fundraising Context</h3><ul>${(data.personalization_bank.fundraising_context || []).map(x => `<li>${htmlEscape(x)}</li>`).join("")}</ul>` : ""}
-${(data.personalization_bank.opener_lines || []).length ? `<h3>Ready-to-Use Opener Lines</h3>${(data.personalization_bank.opener_lines || []).map(x => `<div class="bank-line">${htmlEscape(x)}</div>`).join("")}` : ""}
-${(data.personalization_bank.ps_lines || []).length ? `<h3>Ready-to-Use P.S. Lines</h3>${(data.personalization_bank.ps_lines || []).map(x => `<div class="bank-line">${htmlEscape(x)}</div>`).join("")}` : ""}
+${data.personalization_bank.description ? `<p style="font-size:13px;color:#4A5568;">${escape(data.personalization_bank.description)}</p>` : ""}
+${(data.personalization_bank.specific_programs || []).length ? `<h3>Specific Programs &amp; Initiatives</h3><ul>${(data.personalization_bank.specific_programs || []).map(x => `<li>${escape(x)}</li>`).join("")}</ul>` : ""}
+${(data.personalization_bank.recent_moments || []).length ? `<h3>Recent Moments &amp; Events</h3><ul>${(data.personalization_bank.recent_moments || []).map(x => `<li>${escape(x)}</li>`).join("")}</ul>` : ""}
+${(data.personalization_bank.school_values_phrases || []).length ? `<h3>School Values (Their Words)</h3><ul>${(data.personalization_bank.school_values_phrases || []).map(x => `<li>${escape(x)}</li>`).join("")}</ul>` : ""}
+${(data.personalization_bank.named_humans || []).length ? `<h3>Named People to Reference</h3><ul>${(data.personalization_bank.named_humans || []).map(x => `<li>${escape(x)}</li>`).join("")}</ul>` : ""}
+${(data.personalization_bank.fundraising_context || []).length ? `<h3>Fundraising Context</h3><ul>${(data.personalization_bank.fundraising_context || []).map(x => `<li>${escape(x)}</li>`).join("")}</ul>` : ""}
+${(data.personalization_bank.opener_lines || []).length ? `<h3>Ready-to-Use Opener Lines</h3>${(data.personalization_bank.opener_lines || []).map(x => `<div class="bank-line">${escape(x)}</div>`).join("")}` : ""}
+${(data.personalization_bank.ps_lines || []).length ? `<h3>Ready-to-Use P.S. Lines</h3>${(data.personalization_bank.ps_lines || []).map(x => `<div class="bank-line">${escape(x)}</div>`).join("")}` : ""}
 ` : ""}
 </body></html>`;
 
