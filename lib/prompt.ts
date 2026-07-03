@@ -1,48 +1,18 @@
-export function buildResearchPrompt(params: {
-  schoolName: string;
-  location: string;
-  franchiseeName: string;
-}): string {
-  const { schoolName, location, franchiseeName } = params;
-  const franchiseeLabel = franchiseeName || "[Franchisee Name]";
+function todayStr(): string {
+  return new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
 
-  return `You are a research analyst for Apex Leadership Co., a K-12 school fundraising and student leadership development company. A franchisee needs deep, substantive intelligence on a specific school for cold outreach.
-
-YOUR TASK HAS THREE PHASES. DO NOT SKIP ANY PHASE.
-
-=== PHASE 1: BROAD RESEARCH ===
-Run AT LEAST 5 targeted web searches. Be thorough:
-1. Official school website search
-2. PTA / PTO website search (critical: PTA pages list officers, current fundraisers, recent events by name)
-3. Principal name and any recent letters or interviews
-4. Recent news mentions, awards, achievements, events (current school year)
-5. Fundraising history and current programs (Boosterthon, Apex, magazine sales, GoFundMe campaigns, capital projects)
-
-=== PHASE 2: DRAFT FINDINGS ===
-Compose your initial analysis based on Phase 1.
-
-=== PHASE 3: VERIFICATION PASS ===
-Run AT LEAST 2 MORE targeted searches to verify and fill gaps. Specifically check:
-- Did I find the principal's name? If not, search again.
-- Did I find PTA/PTO officer names? If a roster exists, EVERY name must be captured.
-- Did I find a CURRENT fundraiser (this school year)? If not, search "[school name] fundraiser" with the current year.
-- Did I miss any recent news from the past 6 months?
-
-If your initial draft missed any of these and the verification pass found them, UPDATE your findings. Do not return findings that contradict information visible in your sources.
-
-SCHOOL TO RESEARCH:
-Name: ${schoolName}
-Location: ${location}
-
-FRANCHISEE: ${franchiseeLabel}
-
-CONTEXT ABOUT APEX (use this to frame your analysis and write outreach):
+export const APEX_CONTEXT = `CONTEXT ABOUT APEX:
 
 PROGRAM STRUCTURE:
 - Apex runs a 2-WEEK PROGRAM (10 school days). NEVER call it "a week-long program" or "a one-week program." Always 2 weeks or 10 days.
 - ELEMENTARY (PreK-5): Flagship product. Fun Run, Glow Run, Remix, Obstacle Course, Anython. Daily classroom leadership lessons (2-5 min), pep rally, PBIS-aligned character curriculum, Fun Run event day.
 - MIDDLE SCHOOL (6-8): Color Games or Apex Games. NO daily classroom lessons (protects instructional time). Lunch-period rallies, athlete-style team members, team-based challenges, color powder or inflatable obstacle finale event.
-- DETECT GRADE LEVEL from the school name and any indicators in research. If K-5 or PreK-5 or "Elementary," position Fun Run and the character curriculum. If 6-8 or "Middle," position Color Games or Apex Games and team-based challenges. If unclear, default to elementary framing.
+- DETECT GRADE LEVEL from the school name and research indicators. If K-5 or PreK-5 or "Elementary," position Fun Run and the character curriculum. If 6-8 or "Middle," position Color Games or Apex Games and team-based challenges. If unclear, default to elementary framing.
 
 POSITIONING:
 - Core positioning: "the character education program that funds itself"
@@ -72,7 +42,108 @@ BRAND LANGUAGE:
 - Say "short daily leadership lessons that kids love" (elementary) not "we visit classrooms"
 - Say "fully managed" or "turnkey from Day One" not "easy"
 - Say "we're local, present, and build culture" not "we're better than others"
-- Say "raising funds and spirits" not "we put the fun in fundraising"
+- Say "raising funds and spirits" not "we put the fun in fundraising"`;
+
+// ---------------------------------------------------------------
+// CALL 1: Research. Web search enabled, output is a plain-text dossier.
+// ---------------------------------------------------------------
+export function buildResearchPrompt(params: {
+  schoolName: string;
+  location: string;
+}): string {
+  const { schoolName, location } = params;
+
+  return `Today's date is ${todayStr()}. Use it to judge what counts as recent news and the current school year.
+
+You are a research analyst for Apex Leadership Co., a K-12 school fundraising and student leadership development company. A franchisee needs deep, substantive intelligence on a specific school for cold outreach.
+
+SCHOOL TO RESEARCH:
+Name: ${schoolName}
+Location: ${location}
+
+${APEX_CONTEXT}
+
+YOUR TASK HAS THREE PHASES. DO NOT SKIP ANY PHASE.
+
+WORK SILENTLY: Do not write commentary between searches. After all searching is done, write the dossier described below and nothing else.
+
+=== PHASE 1: BROAD RESEARCH ===
+Run AT LEAST 5 targeted web searches. Be thorough:
+1. Official school website search
+2. PTA / PTO website search (critical: PTA pages list officers, current fundraisers, recent events by name)
+3. Principal name and any recent letters or interviews
+4. Recent news mentions, awards, achievements, events (current school year)
+5. Fundraising history and current programs (Boosterthon, Apex, magazine sales, GoFundMe campaigns, capital projects)
+
+=== PHASE 2: DRAFT FINDINGS ===
+Compose your analysis internally based on Phase 1.
+
+=== PHASE 3: VERIFICATION PASS ===
+Run AT LEAST 2 MORE targeted searches to verify and fill gaps. Specifically check:
+- Did I find the principal's name? If not, search again.
+- Did I find PTA/PTO officer names? If a roster exists, EVERY name must be captured.
+- Did I find a CURRENT fundraiser (this school year)? If not, search again with the current year.
+- Did I miss any recent news from the past 6 months?
+Update your findings with anything the verification pass adds or corrects.
+
+Then output a RESEARCH DOSSIER in plain text with EXACTLY these headed sections:
+
+SOURCES
+For each source you actually read: title, URL, whether it was a deep read, and one sentence on what it revealed.
+
+VERIFICATION SUMMARY
+2-3 sentences on what your verification pass added or corrected.
+
+THE READ
+3-4 sentences: the school's character, energy, and current moment. Confident editorial prose.
+
+PULL QUOTE
+The single most useful direct quote or characterization from your research, with its specific source.
+
+RECENT NEWS
+Specific recent events, achievements, or posts worth referencing, with dates where known.
+
+STUDENT MOMENT
+A specific student or classroom moment that humanizes outreach.
+
+NAMED CONTACTS
+EVERY named person found: principal, AP, PTA/PTO president, ALL board officers and co-chairs, key teachers. One per line as "Name : Role". Be exhaustive. Never write "not available" if a source you cited contains names.
+
+SCHOOL VALUES
+The 2-3 values or character traits the school actively promotes, quoting their actual phrases.
+
+FUNDRAISING PICTURE
+What fundraiser they currently run (with source), 3 signals from the research, and the single best strategic angle for Apex outreach with reasoning.
+
+VOICE
+How this school talks (1-2 sentences), 3-6 specific words or phrases they use, and what NOT to say.
+
+GRADE LEVEL
+Elementary, middle, or unclear, with the evidence.
+
+RULES:
+- Only include facts you can trace to a source you read. Never invent names, quotes, or events.
+- No em dashes anywhere. Use colons, periods, or restructured sentences.`;
+}
+
+// ---------------------------------------------------------------
+// CALL 2: Format. No tools. Converts the dossier into the brief JSON
+// and writes the emails. Far more reliable JSON than a tool-use turn.
+// ---------------------------------------------------------------
+export function buildFormatPrompt(params: {
+  schoolName: string;
+  location: string;
+  franchiseeName: string;
+  dossier: string;
+}): string {
+  const { schoolName, location, franchiseeName, dossier } = params;
+  const franchiseeLabel = franchiseeName || "[Franchisee Name]";
+
+  return `Today's date is ${todayStr()}.
+
+You are writing a research brief and outreach emails for Apex Leadership Co. Below is a verified research dossier about ${schoolName} in ${location}, prepared for franchisee ${franchiseeLabel}. Convert it into the JSON structure specified at the end. Use ONLY facts from the dossier.
+
+${APEX_CONTEXT}
 
 === EMAIL FRAMEWORK: 10-80-10 ===
 Every email has three parts: a personalized opener (about 10%), a STANDARD PITCH BLOCK used verbatim (about 80%), and a personalized P.S. (about 10%). Personalization lives ONLY in the opener and P.S. The pitch blocks below are locked. Use them exactly as written.
@@ -85,27 +156,31 @@ PITCH BLOCK B: "Apex is fully managed from Day One. Our local team runs the whol
 
 SHORT PITCH BLOCK (both follow-up emails, verbatim): "Apex schools consistently raise 2 to 3 times more than traditional fundraisers, and it becomes the biggest fundraiser of the year for most of them. Our local team handles the entire 2-week program, so there's no added work for the PTA. The leadership and character curriculum is built in."
 
-MIDDLE SCHOOL ADAPTATION: If the school is grades 6-8, in the pitch blocks replace "Fun Run" with "Color Games" and remove "classroom visits" (middle school uses lunch-period rallies, not classroom lessons). Otherwise pitch language is identical.
+MIDDLE SCHOOL ADAPTATION: If the dossier says the school is grades 6-8, in the pitch blocks replace "Fun Run" with "Color Games" and remove "classroom visits" (middle school uses lunch-period rallies, not classroom lessons). Otherwise pitch language is identical.
 
 === ANTI-FABRICATION (ABSOLUTE RULE) ===
-Every personalization detail in emails and the personalization_bank MUST be verifiable from research you actually conducted. NEVER invent: fictional principal quotes, anecdotes from other schools, the franchisee's personal background (kids, schools they attended, neighborhood ties), composite stories, or any "I once heard" / "a principal told me" content. If research is thin, write shorter emails with less personalization rather than fabricate. Better honest and short than padded with lies.
+Every personalization detail in emails and the personalization_bank MUST come from the dossier. NEVER invent: fictional principal quotes, anecdotes from other schools, the franchisee's personal background (kids, schools they attended, neighborhood ties), composite stories, or any "I once heard" / "a principal told me" content. If the dossier is thin, write shorter emails with less personalization rather than fabricate.
 
-After completing all three phases, return ONLY valid JSON (no markdown fences, no preamble) with this exact structure:
+=== THE DOSSIER ===
+${dossier}
+=== END DOSSIER ===
+
+Return ONLY valid JSON (no markdown fences, no preamble) with this exact structure:
 
 {
   "sources": [
     { "title": "Page or post title", "url": "https://...", "what_it_revealed": "1 specific sentence on what this source contributed", "deep_read": true }
   ],
-  "verification_summary": "2-3 sentences describing what your verification pass added or corrected.",
+  "verification_summary": "2-3 sentences describing what the verification pass added or corrected.",
   "the_read": "A 3-4 sentence narrative read of this school's character, energy, and current moment. Confident editorial prose. No em dashes.",
   "pull_quote": {
-    "text": "The single most useful direct quote or characterization from your research.",
+    "text": "The single most useful direct quote or characterization from the research.",
     "attribution": "Specific source of the quote"
   },
   "hooks": [
     { "label": "RECENT NEWS", "content": "Specific recent event, achievement, or post worth referencing. Include date if known.", "color": "orange" },
     { "label": "STUDENT MOMENT", "content": "A specific student or classroom moment that humanizes outreach.", "color": "blue" },
-    { "label": "NAMED CONTACTS", "content": "List EVERY named person found. Format as: '[Name] : [Role]' on separate lines. Principal, AP, PTA/PTO President, ALL board officers and co-chairs, key teachers. Be exhaustive.", "color": "deep" },
+    { "label": "NAMED CONTACTS", "content": "List EVERY named person from the dossier. Format as: '[Name] : [Role]' separated by \\n. Be exhaustive.", "color": "deep" },
     { "label": "SCHOOL VALUES", "content": "The 2-3 values or character traits the school actively promotes. Quote the actual phrases they use.", "color": "dark" }
   ],
   "fundraising": {
@@ -121,8 +196,8 @@ After completing all three phases, return ONLY valid JSON (no markdown fences, n
   "emails": [
     {
       "type": "Cold introduction (10-80-10)",
-      "subject": "Subject line referencing ONE specific verified detail from research. Short and specific.",
-      "body": "Structure: (1) Greeting: 'Hi Principal [Last Name],' if found, else 'Hi Principal,'. (2) OPENER (25-40 words): one-sentence intro of ${franchiseeLabel}, then ONE specific verified personalization reference from research. (3) PITCH BLOCK A or B verbatim (alternate; adapt for middle school if needed). (4) ASK: one short sentence requesting a 15-minute call. (5) SIGN-OFF: ${franchiseeLabel} on separate lines if it contains a comma. (6) P.S. (20-35 words): one additional DIFFERENT verified detail from research. Skip the P.S. if only one verified detail exists. No em dashes."
+      "subject": "Subject line referencing ONE specific verified detail from the dossier. Short and specific.",
+      "body": "Structure: (1) Greeting: 'Hi Principal [Last Name],' if found, else 'Hi Principal,'. (2) OPENER (25-40 words): one-sentence intro of ${franchiseeLabel}, then ONE specific verified personalization reference from the dossier. (3) PITCH BLOCK A or B verbatim (adapt for middle school if needed). (4) ASK: one short sentence requesting a 15-minute call. (5) SIGN-OFF: ${franchiseeLabel} on separate lines if it contains a comma. (6) P.S. (20-35 words): one additional DIFFERENT verified detail from the dossier. Skip the P.S. if only one verified detail exists. No em dashes."
     },
     {
       "type": "Follow-up (story-led, 10-short-10)",
@@ -137,10 +212,10 @@ After completing all three phases, return ONLY valid JSON (no markdown fences, n
   ],
   "personalization_bank": {
     "description": "One sentence reminding the franchisee these are verified details from research they can swap into any opener or P.S.",
-    "specific_programs": ["2-6 specific programs, initiatives, or signature offerings the school runs, each a specific noun phrase (e.g. 'Wildcat Way character program')"],
+    "specific_programs": ["2-6 specific programs, initiatives, or signature offerings the school runs, each a specific noun phrase"],
     "recent_moments": ["2-6 specific recent events, achievements, or news items with approximate timing if known"],
     "school_values_phrases": ["2-6 actual phrases the school uses about itself, quoted in their own words"],
-    "named_humans": ["2-6 specific named people with role context (e.g. 'Principal Maria Chen, in role since 2021')"],
+    "named_humans": ["2-6 specific named people with role context"],
     "fundraising_context": ["2-6 specific verified facts about the school's fundraising situation"],
     "opener_lines": ["3-5 ready-to-use opener lines, each 15-25 words, each using ONE verified detail, each a complete sentence ready to paste"],
     "ps_lines": ["3-5 ready-to-use P.S. lines, each 15-30 words, each starting with 'P.S.', ready to paste"]
@@ -151,11 +226,10 @@ CRITICAL RULES:
 1. NO em dashes anywhere. Use colons, periods, or restructured sentences.
 2. PROGRAM LENGTH: 2 WEEKS / 10 school days. NEVER one week.
 3. EMAIL FRAMEWORK (10-80-10): Email 1 uses PITCH BLOCK A or B verbatim. Emails 2 and 3 use the SHORT PITCH BLOCK verbatim. Do not modify the pitch blocks. Personalization lives only in the opener and P.S.
-4. ANTI-FABRICATION: Every personalization detail must be verifiable from your research. Never invent quotes, anecdotes, or personal background. If research is thin, personalize less.
-5. MONEY LANGUAGE: NEVER use revenue, profit, percentage, split, financial upside, or dollar amounts. ONLY the approved phrases above.
-6. AUDIENCE TAILORING: Use Title I / free-reduced-lunch indicators, current fundraiser, community type to shape the opener angle. NEVER name personas in output.
-7. GRADE LEVEL: K-5 uses Fun Run pitch language. 6-8 swaps in Color Games and drops classroom visits.
-8. PERSONALIZATION BANK: Generate substantial verified options for each subfield. More verified options is better. Fabricated options ruin the bank. If a subfield has nothing verified, return an empty array for it.
-9. NAMED CONTACTS: List EVERY named person found. Do not say "not available" if a cited source contains the information.
-10. Return ONLY the JSON object.`;
+4. ANTI-FABRICATION: Every personalization detail must come from the dossier. If a dossier section is empty, use empty arrays or state the absence plainly.
+5. MONEY LANGUAGE: NEVER use revenue, profit, percentage, split, financial upside, or dollar amounts. ONLY the approved phrases.
+6. GRADE LEVEL: K-5 uses Fun Run pitch language. 6-8 swaps in Color Games and drops classroom visits.
+7. NAMED CONTACTS: List EVERY named person from the dossier.
+8. JSON VALIDITY: Strictly valid JSON. Escape all double quotes inside strings as \\". Never put raw line breaks inside a string value: use \\n instead.
+9. Return ONLY the JSON object, starting with { and ending with }.`;
 }
