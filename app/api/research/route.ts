@@ -96,7 +96,6 @@ export async function POST(req: NextRequest) {
     const format = await anthropic.messages.create({
       model: RESEARCH_MODEL,
       max_tokens: 16000,
-      temperature: 0,
       messages: [
         { role: "user", content: formatPrompt },
         { role: "assistant", content: "{" }, // prefill: forces output to start as JSON
