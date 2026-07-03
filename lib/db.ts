@@ -18,9 +18,17 @@ function ensureSchema(): Promise<void> {
           created_at TIMESTAMPTZ DEFAULT NOW()
         )
       `;
+      // Defensively ensure EVERY expected column exists, regardless of what
+      // schema version originally created this table. ADD COLUMN IF NOT EXISTS
+      // is a no-op when the column is already present, so this is safe to run
+      // on every cold start and converges any old table to the correct shape.
+      await sql`ALTER TABLE research_requests ADD COLUMN IF NOT EXISTS user_email TEXT`;
       await sql`ALTER TABLE research_requests ADD COLUMN IF NOT EXISTS user_name TEXT`;
+      await sql`ALTER TABLE research_requests ADD COLUMN IF NOT EXISTS school_name TEXT`;
+      await sql`ALTER TABLE research_requests ADD COLUMN IF NOT EXISTS school_location TEXT`;
       await sql`ALTER TABLE research_requests ADD COLUMN IF NOT EXISTS franchisee_name TEXT`;
       await sql`ALTER TABLE research_requests ADD COLUMN IF NOT EXISTS brief_data JSONB`;
+      await sql`ALTER TABLE research_requests ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW()`;
     })().catch((e) => {
       schemaReady = null; // allow retry on next call
       throw e;
