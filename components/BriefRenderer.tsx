@@ -1,5 +1,7 @@
 "use client";
 
+import { track } from "../app/providers";
+
 interface BriefData {
   fact_strip?: {
     grade_span?: string;
@@ -186,6 +188,7 @@ ${(data.sources || [])
     a.href = url;
     a.download = `research-brief-${schoolName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.html`;
     a.click();
+    track("brief_downloaded", { school_name: schoolName });
     URL.revokeObjectURL(url);
   };
 

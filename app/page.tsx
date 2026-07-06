@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Masthead } from "@/components/Masthead";
+import { track } from "./providers";
 import { BriefRenderer } from "@/components/BriefRenderer";
 
 const STEPS = [
@@ -74,6 +75,11 @@ export default function HomePage() {
       setStepIndex(prev => Math.min(prev + 1, STEPS.length - 1));
     }, 7000);
 
+    track("research_started", {
+      school_name: schoolName.trim(),
+      location: location.trim(),
+    });
+
     try {
       const res = await fetch("/api/research", {
         method: "POST",
@@ -97,7 +103,17 @@ export default function HomePage() {
         location: location.trim(),
         franchiseeName: franchiseeName.trim(),
       });
+      track("research_completed", {
+        school_name: schoolName.trim(),
+        location: location.trim(),
+        grade_span: data?.fact_strip?.grade_span || "",
+      });
     } catch (err: any) {
+      track("research_failed", {
+        school_name: schoolName.trim(),
+        location: location.trim(),
+        reason: err?.message || "unknown",
+      });
       setError(`Something went sideways: ${err.message}. Try again.`);
     } finally {
       if (stepIntervalRef.current) {
