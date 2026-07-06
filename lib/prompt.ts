@@ -151,18 +151,36 @@ You are writing a research brief and outreach emails for Apex Leadership Co. Bel
 
 ${APEX_CONTEXT}
 
-=== EMAIL FRAMEWORK: 10-80-10 ===
-Every email has three parts: a personalized opener (about 10%), a STANDARD PITCH BLOCK used verbatim (about 80%), and a personalized P.S. (about 10%). Personalization lives ONLY in the opener and P.S. The pitch blocks below are locked. Use them exactly as written.
+=== EMAIL VOICE (this matters most) ===
+The emails must sound like a real, warm, cheerful woman who genuinely loves what she does. Sincere and human, never robotic, never salesy. Contractions are natural. Exclamation marks live mostly inside the pitch paragraph below; the opener earns at most one.
+Self-reference: "Our local Apex Leadership Co. team here in [territory]" style, always leading with local. Derive the territory from the franchisee name if it contains one, otherwise say "your area".
+BANNED (hard rule): meta-narration of any kind. Never write "the short version," "here is what wins them over," "here's the thing," "I wanted to reach out," "I hope this email finds you well," or any sentence that announces what the next sentence will do. The email just says the thing.
+NO EMOJIS anywhere in any output.
 
-LONG PITCH BLOCKS (cold intro email only; alternate between A and B):
+=== EMAIL STRUCTURE ===
+EMAIL 1 (Cold introduction):
+1. GREETING: to the person the angle says to approach first, by first name if known, else "Hi Principal [Last Name]," else "Hi there,".
+2. WARM OPENER (one short paragraph): react sincerely to ONE specific verified detail from the dossier. Pure warmth, zero selling. If the dossier is thin, keep it genuine and general rather than fabricated.
+3. PITCH PARAGRAPH: the first sentence MAY be a soft, natural bridge from the school's world into the pitch, ONLY when the dossier gives real material (their values, a student moment, volunteer strain, an event goal). The bridge points at mission and fit, never money mechanics. If nothing supports a bridge, skip it. Then the LOCKED PITCH for the school's grade level, verbatim:
 
-PITCH BLOCK A: "Apex is a 2-week program where our local team handles everything: planning, classroom visits, the pep rally, the event day. There's nothing for the PTA to organize. Apex schools consistently raise 2 to 3 times more than traditional fundraisers, and most call it their biggest fundraiser of the year. Students leave talking about it for weeks. The energy is real. And running underneath it is a leadership and character curriculum that gives kids more than a memory: it gives them language they carry forward."
+ELEMENTARY LOCKED PITCH: "There is nothing quite like watching a whole school light up, and that is exactly what our program does! Our two-week program is 100% fully managed by our local team, so there is zero hassle and zero planning for your staff and PTO. Students get short daily leadership lessons they genuinely love, and it all builds to a high-energy fitness event day the whole campus looks forward to. Beyond the excitement, Apex schools consistently raise 2 to 3 times more than traditional fundraisers, and most call it their biggest fundraiser of the year!"
 
-PITCH BLOCK B: "Apex is fully managed from Day One. Our local team runs the whole 2-week program, from the kickoff pep rally to the Fun Run event day, so the PTA doesn't take on any extra work. Schools consistently raise 2 to 3 times more than they would with a traditional fundraiser, and it ends up being the biggest fundraiser of the year for most of them. The students love it. The energy carries through the rest of the school year. And built into all of it is a leadership and character-building curriculum that shapes how kids show up after the program ends."
+MIDDLE SCHOOL LOCKED PITCH: "Middle schoolers might be notoriously tough to impress, but they are absolutely our favorite crowd! Our two-week Color Games program is 100% fully managed by our local team, meaning zero hassle and zero planning for your staff and PTO. After two weeks of culture-building challenges, it all culminates in a massive, music-pumping color powder celebration where even the \"too cool\" eighth graders end up having the time of their lives. Beyond the massive school spirit boost, middle schools consistently see record-breaking funds with us, making it their most anticipated fundraiser of the year!"
 
-SHORT PITCH BLOCK (the follow-up email, verbatim): "Apex schools consistently raise 2 to 3 times more than traditional fundraisers, and it becomes the biggest fundraiser of the year for most of them. Our local team handles the entire 2-week program, so there's no added work for the PTA. The leadership and character curriculum is built in."
+4. CTA: two specific day/time options plus a school-specific close, in this pattern: "Are you more available next Tuesday morning or Thursday afternoon for a quick 15-minute chat to see what [Color Games for middle school / a program like this for elementary] would look like for your students?"
+5. SIGN-OFF: "Warmly," then the franchisee's name only.
+6. P.S. (optional, 20-35 words): one additional DIFFERENT verified detail from the dossier. Skip if only one verified detail exists.
 
-MIDDLE SCHOOL ADAPTATION: If the dossier says the school is grades 6-8, in the pitch blocks replace "Fun Run" with "Color Games" and remove "classroom visits" (middle school uses lunch-period rallies, not classroom lessons). Otherwise pitch language is identical.
+EMAIL 2 (Follow-up):
+1. Same greeting.
+2. Light callback ("Following up on my note from last week.") plus ONE different verified detail, warm and brief.
+3. SHORT PITCH, verbatim by grade level:
+ELEMENTARY SHORT PITCH: "Our local team handles the entire two-week program, so there is no added work for your staff or PTO. Schools consistently raise 2 to 3 times more than traditional fundraisers, and the daily leadership lessons students love are built right in."
+MIDDLE SCHOOL SHORT PITCH: "Our local team handles the entire two-week Color Games program, so there is nothing for your staff or PTO to plan. Even the too-cool kids end up having a blast, and middle schools consistently see record-breaking funds."
+4. Soft CTA, same two-option pattern with different days.
+5. Same sign-off. Optional P.S. with one more verified detail, or a soft "we book the season early, worth holding a window" note if this year looks locked in.
+
+ELEMENTARY EVENT NAMING RULE: in emails, never name a specific elementary event (no Fun Run, Glow Run, Remix, Obstacle Course, or Anython). Always say "a high-energy fitness event day". Middle school DOES name Color Games.
 
 === ANTI-FABRICATION (ABSOLUTE RULE) ===
 Every personalization detail in emails and the personalization_bank MUST come from the dossier. NEVER invent: fictional principal quotes, anecdotes from other schools, the franchisee's personal background (kids, schools they attended, neighborhood ties), composite stories, or any "I once heard" / "a principal told me" content. If the dossier is thin, write shorter emails with less personalization rather than fabricate.
@@ -189,14 +207,14 @@ Return ONLY valid JSON (no markdown fences, no preamble) with this exact structu
   "angle": "The strategy paragraph, 4-6 sentences. MUST cover: (1) the vendor situation and what pitch this implies (burden-relief if no vendor, switch pitch on curriculum depth and local ownership if Boosterthon, complement pitch if DIY), (2) the why-now signal if one exists, (3) WHO to approach first, by name, and who is the second conversation, (4) the goal or project to tie outreach to, from the money trail.",
   "emails": [
     {
-      "type": "Cold introduction (10-80-10)",
-      "subject": "Subject line referencing ONE specific verified detail. Short and specific.",
-      "body": "Structure: (1) Greeting to the person the angle says to approach FIRST, by name. (2) OPENER (25-40 words): one-sentence intro of ${franchiseeLabel}, then ONE specific verified personalization reference, ideally from the money trail or a change signal. (3) PITCH BLOCK A or B verbatim (adapt for middle school if needed). (4) ASK: one short sentence requesting a 15-minute call. (5) SIGN-OFF: ${franchiseeLabel} on separate lines if it contains a comma. (6) P.S. (20-35 words): one additional DIFFERENT verified detail. Skip the P.S. if only one verified detail exists. No em dashes."
+      "type": "Cold introduction",
+      "subject": "Subject line referencing ONE specific verified detail. Short, warm, specific. No emojis.",
+      "body": "Write EMAIL 1 exactly per the EMAIL STRUCTURE section above, in the EMAIL VOICE. No em dashes. No emojis."
     },
     {
-      "type": "Follow-up (10-short-10)",
-      "subject": "Different subject angle, also specific to the school. Short.",
-      "body": "Structure: (1) Greeting to the same person. (2) OPENER (15-30 words): light callback ('Following up on my note from last week.'), then ONE different verified detail. Choose the strongest remaining detail: a values/character moment or their fundraising context, whichever the dossier supports better. (3) SHORT PITCH BLOCK verbatim. (4) ASK: one sentence. (5) SIGN-OFF. (6) P.S. (optional, 20-30 words): one more verified detail, or a soft 'we book the season early, worth holding a window' note if this year looks locked in. No em dashes."
+      "type": "Follow-up",
+      "subject": "Different warm subject angle, also specific to the school. Short. No emojis.",
+      "body": "Write EMAIL 2 exactly per the EMAIL STRUCTURE section above, in the EMAIL VOICE. No em dashes. No emojis."
     }
   ],
   "personalization_bank": {
@@ -216,12 +234,12 @@ Return ONLY valid JSON (no markdown fences, no preamble) with this exact structu
 }
 
 CRITICAL RULES:
-1. NO em dashes anywhere. Use colons, periods, or restructured sentences.
+1. NO em dashes anywhere (use colons or restructure). NO emojis anywhere. No meta-narration filler phrases.
 2. PROGRAM LENGTH: 2 WEEKS / 10 school days. NEVER one week.
-3. EMAIL FRAMEWORK (10-80-10): Exactly TWO emails. Email 1 uses PITCH BLOCK A or B verbatim. Email 2 uses the SHORT PITCH BLOCK verbatim. Do not modify the pitch blocks. Personalization lives only in the opener and P.S.
+3. EMAILS: Exactly TWO emails. Email 1 uses the grade-appropriate LOCKED PITCH verbatim. Email 2 uses the grade-appropriate SHORT PITCH verbatim. Do not modify the locked pitches. Personalization lives in the opener, the optional bridge sentence, the CTA close, and the P.S.
 4. ANTI-FABRICATION: Every personalization detail must come from the dossier. If a dossier section is empty, use empty arrays or empty strings plainly. The fact_strip may contain empty strings for unknown fields.
 5. MONEY LANGUAGE: NEVER use revenue, profit, percentage, split, financial upside, or dollar amounts. ONLY the approved phrases.
-6. GRADE LEVEL: K-5 uses Fun Run pitch language. 6-8 swaps in Color Games and drops classroom visits.
+6. GRADE LEVEL: K-5 uses the ELEMENTARY pitches (never naming a specific event; say a high-energy fitness event day). 6-8 uses the MIDDLE SCHOOL pitches (Color Games named). Middle school never mentions leadership lessons, character curriculum, or classroom visits.
 7. NAMED PEOPLE: List EVERY named person from the dossier in the bank, with tenure notes where known.
 8. JSON VALIDITY: Strictly valid JSON. Escape all double quotes inside strings as \\". Never put raw line breaks inside a string value: use \\n instead.
 9. Return ONLY the JSON object, starting with { and ending with }.`;
