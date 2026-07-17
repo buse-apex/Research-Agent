@@ -50,8 +50,16 @@ BRAND LANGUAGE:
 export function buildResearchPrompt(params: {
   schoolName: string;
   location: string;
+  fetchedContext?: string;
 }): string {
-  const { schoolName, location } = params;
+  const { schoolName, location, fetchedContext } = params;
+
+  const _now = new Date();
+  const currentYear = _now.getFullYear();
+  const _syStart = _now.getMonth() >= 7 ? currentYear : currentYear - 1;
+  const currentSchoolYear = `${_syStart}-${_syStart + 1}`;
+  const priorSchoolYear = `${_syStart - 1}-${_syStart}`;
+  const oldestYear = currentYear - 3;
 
   return `Today's date is ${todayStr()}. Use it to judge what counts as recent news and the current school year.
 
@@ -60,6 +68,15 @@ You are a research analyst for Apex Leadership Co., a K-12 school fundraising an
 SCHOOL TO RESEARCH:
 Name: ${schoolName}
 Location: ${location}
+${fetchedContext ? `
+
+FRANCHISEE-PROVIDED PAGES (READ THESE FIRST):
+The franchisee specifically asked you to use these pages. Their content has already been fetched for you below. Treat this as primary, verified source material: read it carefully, fold it into your findings, and cite these URLs in your SOURCES section as deep reads. If a page is marked as could-not-be-read, do not invent its contents; cover that ground with your own searches instead. After using these, continue with your normal search phases to fill any gaps.
+
+${fetchedContext}
+
+----
+` : ""}
 
 ${APEX_CONTEXT}
 
@@ -67,13 +84,22 @@ YOUR TASK HAS THREE PHASES. DO NOT SKIP ANY PHASE.
 
 WORK SILENTLY: Do not write commentary between searches. After all searching is done, write the dossier described below and nothing else.
 
+=== RECENCY REQUIREMENT (CRITICAL) ===
+Old pages rank higher in search simply because they have existed longer, so a plain search will surface stale results. You must actively fight this:
+- The current school year is ${currentSchoolYear}. The prior year is ${priorSchoolYear}.
+- ALWAYS include a year in your fundraising and news searches. Run current-year searches FIRST: include "${currentYear}" and "${currentSchoolYear}" in the query (for example: [school name] fundraiser ${currentYear}, [school name] PTA ${currentSchoolYear}).
+- If current-year searches return nothing, step back one year at a time: try ${priorSchoolYear}, then the year before. Accept results up to 3 years old (${oldestYear} at the earliest) but never present old information as if it were current.
+- For EVERY dated fact you report (fundraiser, event, news, staff), state how recent it is: give the year or school year, and note explicitly if the most recent thing you could find is more than a year old.
+- If the school has not yet posted plans for ${currentSchoolYear}, say so plainly and report the most recent prior fundraiser with its year, rather than implying it is current.
+- Prefer the school's own current-year pages, recent local news, and dated PTA posts over undated or clearly old pages.
+
 === PHASE 1: BROAD RESEARCH ===
 Run AT LEAST 5 targeted web searches. Be thorough:
 1. Official school website search
 2. PTA / PTO website search (critical: PTA pages list officers, current fundraisers, recent events by name)
 3. Principal name and any recent letters or interviews
-4. Recent news mentions, awards, achievements, events (current school year)
-5. Fundraising history and current programs (Boosterthon, Apex, magazine sales, GoFundMe campaigns, capital projects)
+4. Recent news, awards, achievements, events, with the current year in the query (e.g. [school name] news ${currentYear})
+5. Current-year fundraiser first (e.g. [school name] fundraiser ${currentYear}), then fundraising history (Boosterthon, Apex, catalog/magazine sales, GoFundMe, capital projects)
 
 === PHASE 2: DRAFT FINDINGS ===
 Compose your analysis internally based on Phase 1.
@@ -196,7 +222,7 @@ Return ONLY valid JSON (no markdown fences, no preamble) with this exact structu
     "grade_span": "e.g. PreK-5",
     "enrollment": "e.g. ~640 students, or empty string if unknown",
     "district": "district name, or empty string",
-    "current_fundraiser": "e.g. PTA catalog sale (fall), or 'none visible'",
+    "current_fundraiser": "Include the year or school year, e.g. 'PTA catalog sale, fall 2025-2026' or 'none visible for 2026-2027'",
     "decision_path": "e.g. PTA-led, principal signs off"
   },
   "the_read": "3-4 sentence narrative read of the school: character, energy, current moment, and what their fundraising money is for if known. Confident editorial prose. No em dashes.",

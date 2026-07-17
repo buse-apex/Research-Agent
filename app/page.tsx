@@ -22,6 +22,7 @@ export default function HomePage() {
   const [schoolName, setSchoolName] = useState("");
   const [location, setLocation] = useState("");
   const [franchiseeName, setFranchiseeName] = useState("");
+  const [extraUrls, setExtraUrls] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [briefData, setBriefData] = useState<any>(null);
@@ -88,6 +89,7 @@ export default function HomePage() {
           schoolName: schoolName.trim(),
           location: location.trim(),
           franchiseeName: franchiseeName.trim(),
+          extraUrls: extraUrls.trim(),
         }),
       });
 
@@ -128,6 +130,7 @@ export default function HomePage() {
   const handleClear = () => {
     setSchoolName("");
     setLocation("");
+    setExtraUrls("");
     setBriefData(null);
     setError("");
   };
@@ -194,6 +197,24 @@ export default function HomePage() {
               disabled={loading}
             />
             <div className="helper">Used in the email drafts</div>
+          </div>
+        </div>
+
+        <span className="label">Specific pages to include (optional)</span>
+        <div className="field-row single">
+          <div>
+            <textarea
+              className="field"
+              value={extraUrls}
+              onChange={(e) => setExtraUrls(e.target.value)}
+              placeholder={"https://schoolname.org/pta\nhttps://localnews.com/article-about-the-school"}
+              disabled={loading}
+              rows={3}
+              style={{ resize: "vertical", fontFamily: "inherit", lineHeight: 1.5 }}
+            />
+            <div className="helper">
+              One URL per line. The agent will read these first, then do its own research. Up to 5.
+            </div>
           </div>
         </div>
 

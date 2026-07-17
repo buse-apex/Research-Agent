@@ -4,6 +4,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { authOptions } from "@/lib/auth";
 import { logResearchRequest } from "@/lib/db";
 import { buildResearchPrompt, buildFormatPrompt } from "@/lib/prompt";
+import { sanitizeUrls, fetchUrls, renderFetchedContext } from "@/lib/fetchUrls";
 
 export const maxDuration = 300; // 5 minutes for long research
 
@@ -31,6 +32,7 @@ export async function POST(req: NextRequest) {
   const schoolName = String(body.schoolName || "").trim().slice(0, 120);
   const location = String(body.location || "").trim().slice(0, 80);
   const franchiseeName = String(body.franchiseeName || "").trim().slice(0, 120);
+  const extraUrls = sanitizeUrls(body.extraUrls);
 
   if (!schoolName || !location) {
     return NextResponse.json(
@@ -39,7 +41,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const researchPrompt = buildResearchPrompt({ schoolName, location });
+  // Guaranteed fetch of any franchisee-supplied URLs (isolated failures).
+  const fetchedPages = await fetchUrls(extraUrls);
+  const fetchedContext = renderFetchedContext(fetchedPages);
+
+  const researchPrompt = buildResearchPrompt({ schoolName, location, fetchedContext });
 
   try {
     // ---- CALL 1: research with web search; output is a plain-text dossier ----

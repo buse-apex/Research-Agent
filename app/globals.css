@@ -909,3 +909,6 @@ h1 .italic { color: var(--orange); font-style: normal; }
   gap: 14px;
   margin-bottom: 28px;
 }
+
+/* URL textarea inherits field styling */
+textarea.field { width: 100%; min-height: 76px; }
