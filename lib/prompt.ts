@@ -20,10 +20,10 @@ POSITIONING:
 - Local-neighbor framing: franchisees position themselves as community members, not vendors
 - Authentic outcome principals describe: "the campus felt more alive"
 
-APPROVED MONEY LANGUAGE (CRITICAL):
-- NEVER mention revenue, profits, percentages, splits, or specific dollar amounts in any email or output.
-- NEVER write phrases like "raise more money," "increase revenue," "financial upside," or "the financials."
-- ONLY use these approved phrases when referencing the money angle:
+APPROVED MONEY LANGUAGE (scope matters):
+- IN EMAIL DRAFTS: never mention specific dollar amounts, revenue, percentages, or splits about what schools raise with Apex, and never write phrases like "raise more money," "increase revenue," "financial upside," or "the financials." Keep specific dollar figures about the target school out of email drafts too.
+- IN THE BRIEF (the research output for the franchisee): amounts the school raised with THEIR OWN fundraisers are valuable intelligence. Capture them with the year and show them in the money trail, the angle, and the bank. Knowing "they raised $8,000 with a catalog sale in 2025" tells the franchisee exactly how underserved the school is.
+- ONLY use these approved phrases when referencing the Apex money angle in emails:
   - "the biggest fundraiser of the year"
   - "record-breaking funds"
   - "consistently raise more than traditional fundraisers"
@@ -51,8 +51,9 @@ export function buildResearchPrompt(params: {
   schoolName: string;
   location: string;
   fetchedContext?: string;
+  socialContext?: string;
 }): string {
-  const { schoolName, location, fetchedContext } = params;
+  const { schoolName, location, fetchedContext, socialContext } = params;
 
   const _now = new Date();
   const currentYear = _now.getFullYear();
@@ -74,6 +75,11 @@ FRANCHISEE-PROVIDED PAGES (READ THESE FIRST):
 The franchisee specifically asked you to use these pages. Their content has already been fetched for you below. Treat this as primary, verified source material: read it carefully, fold it into your findings, and cite these URLs in your SOURCES section as deep reads. If a page is marked as could-not-be-read, do not invent its contents; cover that ground with your own searches instead. After using these, continue with your normal search phases to fill any gaps.
 
 ${fetchedContext}
+
+----
+` : ""}${socialContext ? `
+
+${socialContext}
 
 ----
 ` : ""}
@@ -99,7 +105,8 @@ Run AT LEAST 5 targeted web searches. Be thorough:
 2. PTA / PTO website search (critical: PTA pages list officers, current fundraisers, recent events by name)
 3. Principal name and any recent letters or interviews
 4. Recent news, awards, achievements, events, with the current year in the query (e.g. [school name] news ${currentYear})
-5. Current-year fundraiser first (e.g. [school name] fundraiser ${currentYear}), then fundraising history (Boosterthon, Apex, catalog/magazine sales, GoFundMe, capital projects)
+5. The school's and PTA's social media accounts (Facebook, Instagram): find the page links, and capture anything public that search surfaces from them
+6. Current-year fundraiser first (e.g. [school name] fundraiser ${currentYear}), then fundraising history (Boosterthon, Apex, catalog/magazine sales, GoFundMe, capital projects)
 
 === PHASE 2: DRAFT FINDINGS ===
 Compose your analysis internally based on Phase 1.
@@ -246,10 +253,11 @@ Return ONLY valid JSON (no markdown fences, no preamble) with this exact structu
   "personalization_bank": {
     "description": "One sentence reminding the franchisee these are verified details they can swap into any opener or P.S.",
     "named_people": ["Every named person with role and tenure note, e.g. 'Kate Delgado, Fall Fundraiser Chair (new role)'"],
-    "money_trail": ["2-6 verified facts about what their fundraising bought or is for, and their current fundraiser format"],
+    "money_trail": ["2-6 verified facts: what their fundraising bought or is for, amounts raised where found (with year), and their current fundraiser format"],
     "recent_moments": ["2-6 specific recent events, achievements, or student moments with approximate timing"],
     "their_words": ["2-6 actual phrases the school uses about itself, quoted in their own words"],
     "calendar_timing": ["1-4 facts: fundraising window, PTA meeting schedule, upcoming events"],
+    "social_links": ["The school and PTA social page URLs found, each as a plain URL. These are shown to the franchisee with a reminder to check them for the freshest posts."],
     "opener_lines": ["3-4 ready-to-use opener lines, each 15-25 words, each using ONE verified detail, complete sentences ready to paste"],
     "ps_lines": ["2-3 ready-to-use P.S. lines, each 15-30 words, each starting with 'P.S.', ready to paste"]
   },

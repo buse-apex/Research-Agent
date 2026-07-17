@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { logResearchRequest } from "@/lib/db";
 import { buildResearchPrompt, buildFormatPrompt } from "@/lib/prompt";
 import { sanitizeUrls, fetchUrls, renderFetchedContext } from "@/lib/fetchUrls";
+import { splitSocialUrls, discoverFacebookUrl, scrapeFacebookPosts, renderSocialContext, SocialResult } from "@/lib/social";
 
 export const maxDuration = 300; // 5 minutes for long research
 
@@ -33,6 +34,7 @@ export async function POST(req: NextRequest) {
   const location = String(body.location || "").trim().slice(0, 80);
   const franchiseeName = String(body.franchiseeName || "").trim().slice(0, 120);
   const extraUrls = sanitizeUrls(body.extraUrls);
+  const includeSocial = body.includeSocial === true;
 
   if (!schoolName || !location) {
     return NextResponse.json(
@@ -41,11 +43,35 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Guaranteed fetch of any franchisee-supplied URLs (isolated failures).
-  const fetchedPages = await fetchUrls(extraUrls);
-  const fetchedContext = renderFetchedContext(fetchedPages);
+  // Social URLs are login-walled and cannot be plain-fetched; route them to
+  // the Apify deep dive instead (when enabled) and plain-fetch the rest.
+  const { social: socialUrls, regular: regularUrls } = splitSocialUrls(extraUrls);
 
-  const researchPrompt = buildResearchPrompt({ schoolName, location, fetchedContext });
+  // Guaranteed fetch of any franchisee-supplied non-social URLs (isolated failures).
+  const fetchedPages = await fetchUrls(regularUrls);
+  let fetchedContext = renderFetchedContext(fetchedPages);
+
+  // Optional social media deep dive (Apify). Fails gracefully in every branch.
+  let socialResult: SocialResult | null = null;
+  if (includeSocial) {
+    let fbUrl = socialUrls.find((u) => /facebook\.com/i.test(u)) || null;
+    if (!fbUrl) {
+      fbUrl = await discoverFacebookUrl(anthropic, REPAIR_MODEL, schoolName, location);
+    }
+    socialResult = fbUrl
+      ? await scrapeFacebookPosts(fbUrl)
+      : { ok: false, note: "No official Facebook page could be found for this school." };
+  } else if (socialUrls.length) {
+    // Deep dive off, but social links were pasted: surface them for manual checking.
+    fetchedContext +=
+      (fetchedContext ? "\n\n----\n\n" : "") +
+      `FRANCHISEE-PROVIDED SOCIAL LINKS (content not fetched; social pages block automated reading): ${socialUrls.join(
+        ", "
+      )}. Include these in the brief's social links so the franchisee can check them manually. Do not invent their contents.`;
+  }
+  const socialContext = renderSocialContext(socialResult);
+
+  const researchPrompt = buildResearchPrompt({ schoolName, location, fetchedContext, socialContext });
 
   try {
     // ---- CALL 1: research with web search; output is a plain-text dossier ----

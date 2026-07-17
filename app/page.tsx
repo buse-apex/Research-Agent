@@ -23,6 +23,7 @@ export default function HomePage() {
   const [location, setLocation] = useState("");
   const [franchiseeName, setFranchiseeName] = useState("");
   const [extraUrls, setExtraUrls] = useState("");
+  const [includeSocial, setIncludeSocial] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [briefData, setBriefData] = useState<any>(null);
@@ -79,6 +80,7 @@ export default function HomePage() {
     track("research_started", {
       school_name: schoolName.trim(),
       location: location.trim(),
+      social_deep_dive: includeSocial,
     });
 
     try {
@@ -90,6 +92,7 @@ export default function HomePage() {
           location: location.trim(),
           franchiseeName: franchiseeName.trim(),
           extraUrls: extraUrls.trim(),
+          includeSocial,
         }),
       });
 
@@ -216,6 +219,24 @@ export default function HomePage() {
               One URL per line. The agent will read these first, then do its own research. Up to 5.
             </div>
           </div>
+        </div>
+
+        <div className="field-row single" style={{ marginTop: 4 }}>
+          <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", fontWeight: 400 }}>
+            <input
+              type="checkbox"
+              checked={includeSocial}
+              onChange={(e) => setIncludeSocial(e.target.checked)}
+              disabled={loading}
+              style={{ marginTop: 4 }}
+            />
+            <span style={{ fontSize: 14 }}>
+              <b>Social media deep dive.</b>{" "}
+              <span style={{ color: "var(--ink-soft)" }}>
+                Pulls the school&apos;s recent Facebook posts for the freshest news and fundraiser details. Adds 1 to 2 minutes to the research.
+              </span>
+            </span>
+          </label>
         </div>
 
         <div className="actions">

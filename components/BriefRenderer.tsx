@@ -21,6 +21,7 @@ interface BriefData {
     recent_moments?: string[];
     their_words?: string[];
     calendar_timing?: string[];
+    social_links?: string[];
     opener_lines?: string[];
     ps_lines?: string[];
   };
@@ -157,6 +158,7 @@ ${bankSection("Money Trail", bank?.money_trail)}
 ${bankSection("Recent Moments &amp; Wins", bank?.recent_moments)}
 ${bankSection("Their Words", bank?.their_words)}
 ${bankSection("Calendar &amp; Timing", bank?.calendar_timing)}
+${bankSection("Social to Check", bank?.social_links)}
 ${
   bank?.opener_lines?.length
     ? `<h3>Ready-to-Use Opener Lines</h3>${bank.opener_lines
@@ -201,6 +203,7 @@ ${(data.sources || [])
     { label: "Recent Moments & Wins", items: bank?.recent_moments },
     { label: "Their Words", items: bank?.their_words },
     { label: "Calendar & Timing", items: bank?.calendar_timing },
+    { label: "Social to Check (freshest posts live here)", items: bank?.social_links },
   ].filter((c) => c.items && c.items.length > 0);
 
   return (
