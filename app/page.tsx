@@ -24,6 +24,8 @@ export default function HomePage() {
   const [franchiseeName, setFranchiseeName] = useState("");
   const [extraUrls, setExtraUrls] = useState("");
   const [includeSocial, setIncludeSocial] = useState(false);
+  const [meetingsData, setMeetingsData] = useState<any | null>(null);
+  const [meetingsLoading, setMeetingsLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [briefData, setBriefData] = useState<any>(null);
@@ -130,11 +132,43 @@ export default function HomePage() {
     }
   };
 
+  const handleMeetingsCheck = async () => {
+    setError("");
+    if (!schoolName.trim()) { setError("Please enter the school's name."); return; }
+    if (!location.trim()) { setError("Please add the city and state."); return; }
+    setMeetingsLoading(true);
+    setMeetingsData(null);
+    track("meetings_check_started", { school_name: schoolName.trim(), location: location.trim() });
+    try {
+      const res = await fetch("/api/meetings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ schoolName: schoolName.trim(), location: location.trim(), extraUrls: extraUrls.trim() }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Request failed (${res.status})`);
+      }
+      const data = await res.json();
+      setMeetingsData(data);
+      track("meetings_check_completed", {
+        school_name: schoolName.trim(),
+        meetings_found: Array.isArray(data?.meetings) ? data.meetings.length : 0,
+      });
+    } catch (err: any) {
+      setError(`Meeting check failed: ${err.message}`);
+      track("meetings_check_failed", { school_name: schoolName.trim(), reason: err?.message || "unknown" });
+    } finally {
+      setMeetingsLoading(false);
+    }
+  };
+
   const handleClear = () => {
     setSchoolName("");
     setLocation("");
     setExtraUrls("");
     setBriefData(null);
+    setMeetingsData(null);
     setError("");
   };
 
@@ -243,7 +277,10 @@ export default function HomePage() {
           <button className="btn btn-primary" onClick={handleSubmit} disabled={loading}>
             {loading ? "Researching…" : "Research this school →"}
           </button>
-          <button className="btn btn-ghost" onClick={handleClear} disabled={loading}>
+          <button className="btn btn-secondary" onClick={handleMeetingsCheck} disabled={loading || meetingsLoading}>
+            {meetingsLoading ? "Checking meetings…" : "Check PTA meetings (quick)"}
+          </button>
+          <button className="btn btn-ghost" onClick={handleClear} disabled={loading || meetingsLoading}>
             Start over
           </button>
         </div>
@@ -270,6 +307,58 @@ export default function HomePage() {
 
         {error && <div className="error active">{error}</div>}
       </section>
+
+      {meetingsData && (
+        <section className="meetings-card">
+          <div className="meetings-head">
+            <div>
+              <div className="meetings-title">Upcoming PTA/PTO Meetings</div>
+              <div className="meetings-sub">
+                {meetingsData.school} · checked {meetingsData.checked_on} · next 60 days
+              </div>
+            </div>
+          </div>
+
+          {Array.isArray(meetingsData.meetings) && meetingsData.meetings.length > 0 ? (
+            meetingsData.meetings.map((m: any, i: number) => (
+              <div className="meeting-row" key={i}>
+                <div className="meeting-main">
+                  <span className={m.status === "confirmed" ? "chip chip-green" : "chip chip-amber"}>
+                    {m.status === "confirmed" ? "Confirmed" : "Needs verification"}
+                  </span>
+                  <b>{m.org || "PTA"} {m.type === "Board" ? "Board Meeting" : "General Meeting"}</b>
+                  <span className="meeting-when">
+                    {m.date}{m.time ? ` · ${m.time}` : ""}{m.location ? ` · ${m.location}` : ""}
+                  </span>
+                </div>
+                {m.type === "Board" && (
+                  <div className="meeting-note">Board meetings are leadership-only; ask for an invitation before attending.</div>
+                )}
+                {m.notes && <div className="meeting-note">{m.notes}</div>}
+                {m.source_url && (
+                  <a className="meeting-src" href={m.source_url} target="_blank" rel="noopener noreferrer">Source</a>
+                )}
+              </div>
+            ))
+          ) : (
+            <div className="meeting-none">
+              {meetingsData.none_found_note || "No upcoming meetings were found in the next 60 days."}
+            </div>
+          )}
+
+          {Array.isArray(meetingsData.where_to_watch) && meetingsData.where_to_watch.length > 0 && (
+            <div className="meeting-watch">
+              Where their meetings get announced:{" "}
+              {meetingsData.where_to_watch.map((u: string, i: number) => (
+                <a key={i} href={u} target="_blank" rel="noopener noreferrer">{u}</a>
+              ))}
+            </div>
+          )}
+          <div className="meeting-disclaimer">
+            Always reconfirm the day before attending; PTA schedules move often.
+          </div>
+        </section>
+      )}
 
       {briefData && (
         <BriefRenderer
