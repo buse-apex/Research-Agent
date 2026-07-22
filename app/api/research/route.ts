@@ -26,7 +26,7 @@ const VERIFY_MODEL = "claude-haiku-4-5"; // verification is narrow checking work
 const TOTAL_BUDGET_MS = 580000; // headroom under the 600s Pro ceiling
 const VERIFY_MIN_REMAINING_MS = 90000; // verification needs at least this much left
 const FORMAT_RESERVED_MS = 60000; // always reserve time for the format call
-const RESEARCH_DEADLINE_MS = 420000; // research (incl. continuations) must wrap by here
+const RESEARCH_DEADLINE_MS = 300000; // ceiling, not target; typical research finishes well under
 const CONTINUATION_MAX_USES = 6; // continuations refine, they don't get a fresh full budget
 
 export async function POST(req: NextRequest) {
@@ -76,12 +76,14 @@ export async function POST(req: NextRequest) {
       : { ok: false, note: "No official Facebook page could be found for this school." };
   };
 
-  const [fetchedPages, socialResultRaw] = await Promise.all([
-    fetchUrls(regularUrls),
-    socialPipeline(),
-  ]);
+  // Social runs UNDERNEATH the research instead of in front of it: the scrape
+  // resolves while research is already searching, and its posts join the
+  // pipeline at the verification stage (whose web search can chase any vendor
+  // lead the posts reveal). Zero information lost, minutes reclaimed.
+  const socialPromise = socialPipeline();
+  const fetchedPages = await fetchUrls(regularUrls);
   let fetchedContext = renderFetchedContext(fetchedPages);
-  let socialResult: SocialResult | null = socialResultRaw;
+  let socialResult: SocialResult | null = null;
 
   if (!includeSocial && socialUrls.length) {
     // Deep dive off, but social links were pasted: surface them for manual checking.
@@ -91,9 +93,7 @@ export async function POST(req: NextRequest) {
         ", "
       )}. Include these in the brief's social links so the franchisee can check them manually. Do not invent their contents.`;
   }
-  const socialContext = renderSocialContext(socialResult);
-
-  const researchPrompt = buildResearchPrompt({ schoolName, location, fetchedContext, socialContext });
+  const researchPrompt = buildResearchPrompt({ schoolName, location, fetchedContext });
 
   try {
     // ---- CALL 1: research with web search; output is a plain-text dossier ----
@@ -157,6 +157,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Join the background social scrape; its posts enter the dossier here so
+    // the verifier can check and expand them and the formatter can mine them.
+    socialResult = await socialPromise;
+    const socialContext = renderSocialContext(socialResult);
+    const dossierWithSocial = socialContext ? dossier + "\n\n" + socialContext : dossier;
+
     // ---- CALL 1.5: INDEPENDENT VERIFICATION PASS ----
     // A fresh model instance adversarially re-checks the dossier's key claims.
     // It has no attachment to the original claims: its job is to confirm,
@@ -175,7 +181,7 @@ VERIFY THESE CLAIM TYPES, in priority order:
 2. Every named person and their role (especially the principal and PTA officers)
 3. The current fundraiser and any vendor history claims
 4. Every quotation (find the quoted text; if you cannot find it verbatim, flag it)
-5. Dated facts and amounts (events, achievements, money trail)
+5. Dated facts and amounts (events, achievements, money trail)\n6. Fundraiser signals in the SOCIAL MEDIA section, if present: if posts hint at a vendor (Booster, fun run operator, pledge platform), run a confirming search before judging
 
 CALIBRATION RULES (critical):
 - A claim whose receipt is the school's or district's OWN official website (the domain in the dossier's identity block) is CONFIRMED by default. Do not spend searches re-proving official-site facts (staff names from the staff directory, taglines from the homepage, donations from the district's own donations page). Only mark such a claim CORRECTED if you find direct contradicting evidence.
@@ -190,7 +196,7 @@ UNVERIFIABLE: <claim> (I searched for this and found nothing supporting it)
 Do not add new research topics. Do not soften: if a claim is wrong, say CORRECTED. End with one line starting "SUMMARY:" describing overall reliability.
 
 === DOSSIER TO VERIFY ===
-${dossier}
+${dossierWithSocial}
 === END DOSSIER ===`;
 
       let vMessages: any[] = [{ role: "user", content: verifyPrompt }];
@@ -201,7 +207,7 @@ ${dossier}
         tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 6 } as any],
       });
       let vGuard = 0;
-      while ((vRes.stop_reason as string) === "pause_turn" && vGuard < 3) {
+      while ((vRes.stop_reason as string) === "pause_turn" && vGuard < 1) {
         vMessages = [...vMessages, { role: "assistant", content: vRes.content }];
         vRes = await anthropic.messages.create({
           model: VERIFY_MODEL,
@@ -221,7 +227,7 @@ ${dossier}
       verificationReport = "VERIFICATION PASS FAILED TO RUN. Treat single-source claims with extra caution and mark them accordingly.";
     }
 
-    const verifiedDossier = dossier + "\n\n=== INDEPENDENT VERIFICATION REPORT ===\n" + verificationReport;
+    const verifiedDossier = dossierWithSocial + "\n\n=== INDEPENDENT VERIFICATION REPORT ===\n" + verificationReport;
 
     // ---- CALL 2: no tools; converts the dossier into the brief JSON ----
     const formatPrompt = buildFormatPrompt({

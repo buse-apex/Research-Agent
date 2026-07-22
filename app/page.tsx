@@ -103,7 +103,7 @@ export default function HomePage() {
 
     stepIntervalRef.current = setInterval(() => {
       setStepIndex(prev => Math.min(prev + 1, STEPS.length - 1));
-    }, 45000);
+    }, 40000);
 
     track("research_started", {
       school_name: schoolName.trim(),
@@ -294,7 +294,7 @@ export default function HomePage() {
             <span style={{ fontSize: 14 }}>
               <b>Social media deep dive.</b>{" "}
               <span style={{ color: "var(--ink-soft)" }}>
-                Finds and reads the school&apos;s or PTA&apos;s Facebook posts for the freshest news and fundraiser details. Adds 2 to 3 minutes.
+                Finds and reads the school&apos;s or PTA&apos;s Facebook posts for the freshest news and fundraiser details. Runs alongside the research, so it adds little or no extra time.
               </span>
             </span>
           </label>
@@ -312,7 +312,7 @@ export default function HomePage() {
           </button>
         </div>
         <div className="helper" style={{ marginTop: 10 }}>
-          Deep research typically takes 5 to 10 minutes. It verifies its own work, so the brief is worth the wait.
+          Deep research typically takes 4 to 6 minutes. It verifies its own work, so the brief is worth the wait.
         </div>
 
         {loading && (
