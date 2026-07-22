@@ -25,6 +25,8 @@ const VERIFY_MODEL = "claude-haiku-4-5"; // verification is narrow checking work
 const TOTAL_BUDGET_MS = 290000; // leave headroom under the 300s ceiling
 const VERIFY_MIN_REMAINING_MS = 100000; // verification needs at least this much left
 const FORMAT_RESERVED_MS = 60000; // always reserve time for the format call
+const RESEARCH_DEADLINE_MS = 175000; // research (incl. continuations) must wrap by here
+const CONTINUATION_MAX_USES = 4; // continuations refine, they don't get a fresh full budget
 
 export async function POST(req: NextRequest) {
   // Verify session
@@ -88,11 +90,21 @@ export async function POST(req: NextRequest) {
 
   try {
     // ---- CALL 1: research with web search; output is a plain-text dossier ----
+    // Heavy pre-stages (URL fetch, social scrape) eat the clock before research
+    // starts; shrink the search budget accordingly so the total always fits.
+    const researchMaxUses = elapsed() > 45000 ? 6 : 8;
     const tools = [
       {
         type: "web_search_20250305",
         name: "web_search",
-        max_uses: 8, // enough for 3 research phases, bounds cost and rate-limit pressure
+        max_uses: researchMaxUses,
+      } as any,
+    ];
+    const continuationTools = [
+      {
+        type: "web_search_20250305",
+        name: "web_search",
+        max_uses: CONTINUATION_MAX_USES,
       } as any,
     ];
 
@@ -104,17 +116,25 @@ export async function POST(req: NextRequest) {
       tools,
     });
 
-    // Long research turns can pause; continue until the turn completes.
+    // Long research turns can pause; continue until the turn completes,
+    // the continuation cap is hit, or the research deadline arrives.
     let continuations = 0;
-    while ((research.stop_reason as string) === "pause_turn" && continuations < 4) {
+    while (
+      (research.stop_reason as string) === "pause_turn" &&
+      continuations < 3 &&
+      elapsed() < RESEARCH_DEADLINE_MS
+    ) {
       messages = [...messages, { role: "assistant", content: research.content }];
       research = await anthropic.messages.create({
         model: RESEARCH_MODEL,
         max_tokens: 20000,
         messages,
-        tools,
+        tools: continuationTools,
       });
       continuations++;
+    }
+    if ((research.stop_reason as string) === "pause_turn") {
+      console.warn(`Research stopped at deadline/cap (${Math.round(elapsed() / 1000)}s in); proceeding with gathered material.`);
     }
 
     const dossier = research.content

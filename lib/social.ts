@@ -9,9 +9,10 @@ import type Anthropic from "@anthropic-ai/sdk";
 
 const APIFY_ACTOR = "apify~facebook-posts-scraper";
 const APIFY_TIMEOUT_MS = 60000; // hard cap so social can never sink the run
-const POSTS_FETCH_LIMIT = 60; // scan deep
-const POSTS_KEEP_SIGNAL = 14; // fundraiser-signal posts to keep
-const POSTS_KEEP_RECENT = 6;  // most recent other posts for voice/context
+const POSTS_FETCH_LIMIT = 90; // deep enough to span the school year on most pages
+const KEEP_RECENT_MAX = 15;   // recent-window posts to keep (last 2 months)
+const KEEP_SIGNAL_MAX = 12;   // fundraiser-signal posts to keep (school year)
+const RECENT_WINDOW_DAYS = 62; // "last 2 months"
 const MAX_POST_CHARS = 500;
 
 export interface SocialPost {
@@ -111,13 +112,47 @@ export async function scrapeFacebookPosts(pageUrl: string): Promise<SocialResult
       }))
       .filter((p) => p.text.trim().length > 0);
 
-    // Prioritize fundraiser and money signals over plain recency.
+    // Two buckets, per the product spec:
+    // 1) RECENT WINDOW (last ~2 months): events, announcements, asks, and
+    //    engaging posts, the school's life right now, for openers and P.S. material.
+    // 2) FUNDRAISER SIGNALS (current school year): vendor and money evidence,
+    //    however far back in the fetched set it sits.
     const SIGNALS = /fundrais|donat|pledge|raised|\$\s?\d|dollar|goal|sponsor|auction|gala|carnival|fun run|glow run|color run|color games|boosterthon|jog.?a.?thon|walk.?a.?thon|read.?a.?thon|catalog|cookie dough|wrapping paper|book fair|pta|pto|booster/i;
-    const signalPosts = all.filter((p) => SIGNALS.test(p.text)).slice(0, POSTS_KEEP_SIGNAL);
-    const recentOthers = all
-      .filter((p) => !signalPosts.includes(p))
-      .slice(0, POSTS_KEEP_RECENT);
-    const posts = [...signalPosts, ...recentOthers];
+
+    const now = Date.now();
+    const recentCutoff = now - RECENT_WINDOW_DAYS * 86400000;
+    // School year starts Aug 1: before August, it began last calendar year.
+    const nowD = new Date();
+    const syStartYear = nowD.getMonth() >= 7 ? nowD.getFullYear() : nowD.getFullYear() - 1;
+    const schoolYearStart = new Date(syStartYear, 7, 1).getTime();
+
+    const postTime = (p: SocialPost): number | null => {
+      if (!p.date) return null;
+      const t = Date.parse(p.date);
+      return isNaN(t) ? null : t;
+    };
+
+    // Bucket 1: everything from the recent window (undated posts near the top
+    // of the feed are treated as recent, feeds are reverse-chronological).
+    const recentPosts = all
+      .filter((p, idx) => {
+        const t = postTime(p);
+        return t !== null ? t >= recentCutoff : idx < 10;
+      })
+      .slice(0, KEEP_RECENT_MAX);
+
+    // Bucket 2: fundraiser signals from the school year (or undated), not already kept.
+    const signalPosts = all
+      .filter((p) => {
+        if (recentPosts.includes(p)) return false;
+        if (!SIGNALS.test(p.text)) return false;
+        const t = postTime(p);
+        return t === null || t >= schoolYearStart;
+      })
+      .slice(0, KEEP_SIGNAL_MAX);
+
+    const posts = [...recentPosts, ...signalPosts];
+    (posts as any)._recentCount = recentPosts.length;
 
     if (!posts.length) {
       return { ok: false, pageUrl, note: "Posts were returned but contained no readable text." };
@@ -142,12 +177,23 @@ export function renderSocialContext(result: SocialResult | null): string {
       result.note || "unknown reason"
     }). Do NOT invent social media content. Note the school's social links in the brief so the franchisee can check manually.`;
   }
-  const lines = (result.posts || []).map((p) => {
+  const postsArr = result.posts || [];
+  const recentCount = (postsArr as any)._recentCount ?? postsArr.length;
+  const fmt = (p: SocialPost) => {
     const date = p.date ? `[${p.date}] ` : "";
     return `- ${date}${p.text}${p.url ? ` (${p.url})` : ""}`;
-  });
-  return `SOCIAL MEDIA (recent Facebook posts, fetched for you from ${result.pageUrl}):
-Treat these as primary, dated source material. Mine them for: current or upcoming fundraisers, what money raised is going toward, recent events, named people, and the school's voice. Cite the page as a deep-read source.
+  };
+  const recentLines = postsArr.slice(0, recentCount).map(fmt);
+  const signalLines = postsArr.slice(recentCount).map(fmt);
+  const lines = [
+    "RECENT WINDOW (last ~2 months): the school's life right now. Mine these for events, announcements, asks, engaging moments, named people, and the school's voice; this is prime opener and P.S. material.",
+    ...recentLines,
+    ...(signalLines.length
+      ? ["", "FUNDRAISER SIGNALS (from this school year): vendor and money evidence. Mine these for the money trail, vendor history, and amounts (with dates).", ...signalLines]
+      : []),
+  ];
+  return `SOCIAL MEDIA (Facebook posts, fetched for you from ${result.pageUrl}):
+Treat these as primary, dated source material and cite the page as a deep-read source.
 FUNDRAISER SIGNALS ARE THE PRIORITY: posts mentioning fundraisers, donations, amounts raised, goals, and what the money bought are listed first below. Amounts the school raised with their own fundraisers are VALUABLE INTEL: capture them with their year in the money trail, the angle, and the bank. (The only money restriction is unchanged and applies to emails: no specific dollar figures or multipliers about what schools raise with Apex; approved phrases only. Keep specific dollar figures out of the email drafts.)
 
 ${lines.join("\n")}`;
