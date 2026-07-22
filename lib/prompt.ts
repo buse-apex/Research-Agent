@@ -105,6 +105,14 @@ Old pages rank higher in search simply because they have existed longer, so a pl
 - If the school has not yet posted plans for ${currentSchoolYear}, say so plainly and report the most recent prior fundraiser with its year, rather than implying it is current.
 - Prefer the school's own current-year pages, recent local news, and dated PTA posts over undated or clearly old pages.
 
+=== VENDOR DETECTION (this is a priority finding) ===
+Whether the school uses an outside fundraising vendor, especially Booster, is one of the most valuable facts in this research. Schools rarely announce it plainly, so hunt for it:
+- BRAND VARIANTS: Boosterthon rebranded to "Booster". Search BOTH names: "[school] Boosterthon", "[school] Booster fun run", "[school] Booster Kickoff". A result matching either brand is the same vendor.
+- PLEDGE LINKS ARE PROOF: a link to mybooster.com or funrun.com on any school/PTA page or post means the school uses Booster, even if no post ever says the word. Similarly: 99pledges.com (99Pledges), getmovinfundhub.com (Get Movin'), raisecraze.com (Raise Craze), myapexevent.com (Apex, meaning they are already a customer!). Search "[school] mybooster" explicitly.
+- UNBRANDED FUN RUNS DEMAND A FOLLOW-UP: if the school announces a "fun run", "glow run", "color run", or "dance-a-thon" with no vendor named, that event has an operator. Run at least one more search to identify who ran it ("[school] fun run 2025 vendor OR Booster OR PTA"). If you still cannot tell, report the event AND state plainly that the operator is unidentified: "They ran a fun run in [year]; could not confirm whether it was vendor-run or PTA-run."
+- CHECK MULTIPLE YEARS: a school that used Booster in ${priorSchoolYear} but shows nothing this year is a switch-window signal, not a "no vendor" finding. State vendor history year by year as far back as your recency window allows.
+- In VENDOR HISTORY, always state your evidence (the link or post that proves it) and your confidence: confirmed, likely, or unknown.
+
 === PHASE 1: BROAD RESEARCH ===
 Run AT LEAST 5 targeted web searches. Be thorough:
 1. Official school website search
@@ -112,7 +120,7 @@ Run AT LEAST 5 targeted web searches. Be thorough:
 3. Principal name and any recent letters or interviews
 4. Recent news, awards, achievements, events, with the current year in the query (e.g. [school name] news ${currentYear})
 5. The school's and PTA's social media accounts (Facebook, Instagram): find the page links, and capture anything public that search surfaces from them
-6. Current-year fundraiser first (e.g. [school name] fundraiser ${currentYear}), then fundraising history (Boosterthon, Apex, catalog/magazine sales, GoFundMe, capital projects)
+6. Current-year fundraiser first (e.g. [school name] fundraiser ${currentYear}), then fundraising history. Vendor names to probe: Booster AND Boosterthon (same company, rebranded), Apex, My Fun Run, 99Pledges, Get Movin', catalog/magazine sales, GoFundMe, capital projects
 
 === PHASE 2: DRAFT FINDINGS ===
 Compose your analysis internally based on Phase 1.
