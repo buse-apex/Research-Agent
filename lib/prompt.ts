@@ -179,6 +179,7 @@ One sentence on what your verification pass added or corrected.
 RULES:
 - RECEIPTS RULE (ABSOLUTE): every factual line in your dossier must end with its receipt: [source: URL]. A fact you cannot attach a URL to does not go in the dossier at all. If two sources support a fact, list both.
 - QUOTES RULE: anything in quotation marks must be VERBATIM text from a page you actually read, with its receipt. If summarizing or paraphrasing, do not use quotation marks; write "paraphrase:" before it instead.
+- URL FIDELITY: copy every source URL character for character exactly as it appears in your search results or fetched pages. Never reconstruct, shorten, or normalize a URL from memory. If a site clearly migrated platforms (you see both old-style and new-style URLs for the same site), prefer the new-style URL you actually visited.
 - Never invent names, quotes, dates, or events.
 - No em dashes anywhere. Use colons, periods, or restructured sentences.`;
 }

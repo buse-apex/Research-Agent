@@ -48,7 +48,7 @@ interface BriefData {
   };
   verification_summary?: string;
   social_dive?: string;
-  sources?: { title: string; url: string; deep_read?: boolean }[];
+  sources?: { title: string; url: string; deep_read?: boolean; dead?: boolean }[];
 }
 
 function escape(str: string): string {
@@ -340,7 +340,7 @@ ${(data.sources || [])
                   {(c.items || []).map((item, ii) => (
                     <li key={ii}>
                       {escape(itemText(item))} <StatusChip status={itemStatus(item)} />
-                      {itemSource(item) ? (
+                      {itemSource(item) && !(typeof item === "object" && (item as any).source_dead) ? (
                         <a className="bank-src" href={itemSource(item)} target="_blank" rel="noopener noreferrer"> source</a>
                       ) : null}
                     </li>
@@ -407,10 +407,15 @@ ${(data.sources || [])
           <div className="sources-card">
             {data.sources.map((s, i) => (
               <div key={i} className="source-item">
-                <a href={s.url} target="_blank" rel="noopener noreferrer">
-                  {escape(s.title)}
-                </a>
-                {s.deep_read && <span className="deep-tag">Deep Read</span>}
+                {s.dead ? (
+                  <>
+                    <span style={{ color: "var(--ink-muted)" }}>{escape(s.title)}</span>
+                    <span className="deep-tag" style={{ background: "#FDF6E7", color: "#8A6116" }}>Page no longer available</span>
+                  </>
+                ) : (
+                  <a href={s.url} target="_blank" rel="noopener noreferrer">{escape(s.title)}</a>
+                )}
+                {s.deep_read && !s.dead ? <span className="deep-tag">Deep Read</span> : null}
               </div>
             ))}
           </div>

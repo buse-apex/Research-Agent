@@ -6,6 +6,7 @@ import { logResearchRequest } from "@/lib/db";
 import { buildResearchPrompt, buildFormatPrompt } from "@/lib/prompt";
 import { sanitizeUrls, fetchUrls, renderFetchedContext } from "@/lib/fetchUrls";
 import { splitSocialUrls, discoverFacebookUrl, scrapeFacebookPosts, renderSocialContext, SocialResult } from "@/lib/social";
+import { markDeadLinks } from "@/lib/linkCheck";
 
 export const maxDuration = 600; // Vercel Pro (fluid compute): give research room to be thorough
 
@@ -264,6 +265,8 @@ ${dossier}
     // Log to database
     let briefId: number | null = null;
     try {
+    await markDeadLinks(parsed);
+
       briefId = await logResearchRequest({
         userEmail: session.user.email,
         userName: session.user.name || null,

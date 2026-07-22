@@ -50,13 +50,7 @@ export async function discoverFacebookUrl(
   location: string
 ): Promise<string | null> {
   try {
-    const res = await anthropic.messages.create({
-      model,
-      max_tokens: 600,
-      messages: [
-        {
-          role: "user",
-          content: `Find the Facebook page where fundraising and parent-community news for the school "${schoolName}" in ${location} gets posted. Work in two steps:
+    const prompt = `Find the Facebook page where fundraising and parent-community news for the school "${schoolName}" in ${location} gets posted. Work in two steps:
 
 STEP 1: Search for the school to learn its school district or parent organization name (PTAs are usually named after the district, not the school).
 
@@ -68,18 +62,32 @@ STEP 2: Hunt for the Facebook page, running searches in this priority order unti
 
 Rules: a PTA/PTO page beats a school page beats a district page, because fundraising lives on PTA pages. Numbered URLs like facebook.com/p/Some-Name-12345/ are valid and very common for PTA pages; do not skip them. Do not settle for teachers'-union, alumni, or fan pages.
 
-Respond with ONLY the single best URL (must contain facebook.com) or the word NONE. No other text.`,
-        },
-      ],
+Respond with ONLY the single best URL (must contain facebook.com) or the word NONE. No other text.`;
+
+    let messages: any[] = [{ role: "user", content: prompt }];
+    let res = await anthropic.messages.create({
+      model,
+      max_tokens: 600,
+      messages,
       tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 5 } as any],
     });
+    let guard = 0;
+    while ((res.stop_reason as string) === "pause_turn" && guard < 2) {
+      messages = [...messages, { role: "assistant", content: res.content }];
+      res = await anthropic.messages.create({
+        model,
+        max_tokens: 600,
+        messages,
+        tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 3 } as any],
+      });
+      guard++;
+    }
     const text = res.content
       .filter((b: any) => b.type === "text")
       .map((b: any) => b.text)
       .join(" ");
     const matches = text.match(/https?:\/\/(?:www\.)?facebook\.com\/[^\s"'<>)\]]+/gi) || [];
     if (!matches.length) return null;
-    // Prefer a URL that looks like a PTA/PTO page if several appear.
     const cleaned = matches.map((m) => m.replace(/[.,;]+$/, ""));
     const pta = cleaned.find((u) => /pta|pto/i.test(u));
     return pta || cleaned[0];
@@ -139,6 +147,7 @@ async function apifyScrapeWithHarvest(
       await fetch(`https://api.apify.com/v2/actor-runs/${runId}/abort?token=${encodeURIComponent(token)}`, { method: "POST" });
       status = "ABORTED_BY_US";
     } catch { /* ignore */ }
+    await sleep(3000); // let the aborted run flush its dataset before harvesting
   }
 
   try {

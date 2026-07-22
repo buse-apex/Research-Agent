@@ -8,11 +8,11 @@ import { track } from "./providers";
 import { BriefRenderer } from "@/components/BriefRenderer";
 
 const STEPS = [
+  "Finding the school's Facebook and reading supplied pages",
   "Searching the web for the school",
-  "Reading the school's website end to end",
-  "Reading the PTA / PTO page for board roster",
-  "Looking for recent news and named contacts",
-  "Independent verification pass: re-checking every key claim",
+  "Reading the school's website, live feed, and PTA pages",
+  "Hunting vendor history and fundraiser signals",
+  "Independent verification pass: re-checking key claims",
   "Writing emails and building the personalization bank",
 ];
 
@@ -103,7 +103,7 @@ export default function HomePage() {
 
     stepIntervalRef.current = setInterval(() => {
       setStepIndex(prev => Math.min(prev + 1, STEPS.length - 1));
-    }, 7000);
+    }, 45000);
 
     track("research_started", {
       school_name: schoolName.trim(),
@@ -294,7 +294,7 @@ export default function HomePage() {
             <span style={{ fontSize: 14 }}>
               <b>Social media deep dive.</b>{" "}
               <span style={{ color: "var(--ink-soft)" }}>
-                Pulls the school&apos;s recent Facebook posts for the freshest news and fundraiser details. Adds 1 to 2 minutes to the research.
+                Finds and reads the school&apos;s or PTA&apos;s Facebook posts for the freshest news and fundraiser details. Adds 2 to 3 minutes.
               </span>
             </span>
           </label>
@@ -310,6 +310,9 @@ export default function HomePage() {
           <button className="btn btn-ghost" onClick={handleClear} disabled={loading || meetingsLoading}>
             Start over
           </button>
+        </div>
+        <div className="helper" style={{ marginTop: 10 }}>
+          Deep research typically takes 5 to 10 minutes. It verifies its own work, so the brief is worth the wait.
         </div>
 
         {loading && (
