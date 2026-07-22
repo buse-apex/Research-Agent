@@ -111,11 +111,12 @@ Whether the school uses an outside fundraising vendor, especially Booster, is on
 - PLEDGE LINKS ARE PROOF: a link to mybooster.com or funrun.com on any school/PTA page or post means the school uses Booster, even if no post ever says the word. Similarly: 99pledges.com (99Pledges), getmovinfundhub.com (Get Movin'), raisecraze.com (Raise Craze), myapexevent.com (Apex, meaning they are already a customer!). Search "[school] mybooster" explicitly.
 - UNBRANDED FUN RUNS DEMAND A FOLLOW-UP: if the school announces a "fun run", "glow run", "color run", or "dance-a-thon" with no vendor named, that event has an operator. Run at least one more search to identify who ran it ("[school] fun run 2025 vendor OR Booster OR PTA"). If you still cannot tell, report the event AND state plainly that the operator is unidentified: "They ran a fun run in [year]; could not confirm whether it was vendor-run or PTA-run."
 - CHECK MULTIPLE YEARS: a school that used Booster in ${priorSchoolYear} but shows nothing this year is a switch-window signal, not a "no vendor" finding. State vendor history year by year as far back as your recency window allows.
+- PROBE THE SCHOOL'S OWN SITE FEED (critical, most-missed source): most school websites have a "Live Feed", "News", or announcements section holding years of posts, including fundraiser announcements, that never rank in generic searches and often cannot be fetched directly. Once you know the school's official domain from the identity block, run site-targeted searches that put the DOMAIN in the query alongside vendor and fundraiser terms, for example: "[domain] [school short name] Boosterthon", "[domain] fun run", "[domain] live feed fundraiser", "[school name] live feed Booster". Search result snippets WILL surface this feed content even when the pages themselves cannot be fetched. Run at least 2 such site-targeted searches before concluding a school has no vendor.
 - In VENDOR HISTORY, always state your evidence (the link or post that proves it) and your confidence: confirmed, likely, or unknown.
 
 === PHASE 1: BROAD RESEARCH ===
 Run AT LEAST 5 targeted web searches. Be thorough:
-1. Official school website search
+1. Official school website search, INCLUDING its Live Feed / News / announcements section via site-targeted queries (put the school's domain in the query)
 2. PTA / PTO website search (critical: PTA pages list officers, current fundraisers, recent events by name)
 3. Principal name and any recent letters or interviews
 4. Recent news, awards, achievements, events, with the current year in the query (e.g. [school name] news ${currentYear})
