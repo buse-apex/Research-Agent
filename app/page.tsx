@@ -12,7 +12,7 @@ const STEPS = [
   "Reading the school's website end to end",
   "Reading the PTA / PTO page for board roster",
   "Looking for recent news and named contacts",
-  "Verification pass: checking for missed details",
+  "Independent verification pass: re-checking every key claim",
   "Writing emails and building the personalization bank",
 ];
 

@@ -117,12 +117,68 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // ---- CALL 1.5: INDEPENDENT VERIFICATION PASS ----
+    // A fresh model instance adversarially re-checks the dossier's key claims.
+    // It has no attachment to the original claims: its job is to confirm,
+    // correct, or mark unverifiable. Its report is appended to the dossier.
+    let verificationReport = "";
+    try {
+      const verifyPrompt = `You are an adversarial fact-checker. Below is a research dossier about ${schoolName} in ${location}, prepared for cold outreach. Your ONLY job is to re-verify its key claims with fresh web searches. Assume nothing in it is true until you confirm it.
+
+VERIFY THESE CLAIM TYPES, in priority order:
+1. The school identity block (official name, district, grade span)
+2. Every named person and their role (especially the principal and PTA officers)
+3. The current fundraiser and any vendor history claims
+4. Every quotation (find the quoted text; if you cannot find it verbatim, flag it)
+5. Dated facts and amounts (events, achievements, money trail)
+
+For each claim you check, output one line:
+CONFIRMED: <claim> [source: URL]
+CORRECTED: <original claim> -> <corrected version> [source: URL]
+UNVERIFIABLE: <claim> (searched, could not confirm)
+
+Check as many claims as your search budget allows, prioritizing the claim types in order. Do not add new research topics. Do not soften: if a claim is wrong, say CORRECTED; if you cannot find support, say UNVERIFIABLE. End with one line starting "SUMMARY:" describing overall reliability.
+
+=== DOSSIER TO VERIFY ===
+${dossier}
+=== END DOSSIER ===`;
+
+      let vMessages: any[] = [{ role: "user", content: verifyPrompt }];
+      let vRes = await anthropic.messages.create({
+        model: RESEARCH_MODEL,
+        max_tokens: 8000,
+        messages: vMessages,
+        tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 6 } as any],
+      });
+      let vGuard = 0;
+      while ((vRes.stop_reason as string) === "pause_turn" && vGuard < 3) {
+        vMessages = [...vMessages, { role: "assistant", content: vRes.content }];
+        vRes = await anthropic.messages.create({
+          model: RESEARCH_MODEL,
+          max_tokens: 8000,
+          messages: vMessages,
+          tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 6 } as any],
+        });
+        vGuard++;
+      }
+      verificationReport = vRes.content
+        .filter((b: any) => b.type === "text")
+        .map((b: any) => b.text)
+        .join("\n")
+        .trim();
+    } catch (vErr) {
+      console.error("Verification pass failed; proceeding without it:", vErr);
+      verificationReport = "VERIFICATION PASS FAILED TO RUN. Treat single-source claims with extra caution and mark them accordingly.";
+    }
+
+    const verifiedDossier = dossier + "\n\n=== INDEPENDENT VERIFICATION REPORT ===\n" + verificationReport;
+
     // ---- CALL 2: no tools; converts the dossier into the brief JSON ----
     const formatPrompt = buildFormatPrompt({
       schoolName,
       location,
       franchiseeName,
-      dossier,
+      dossier: verifiedDossier,
     });
 
     const format = await anthropic.messages.create({

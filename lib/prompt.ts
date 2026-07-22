@@ -90,6 +90,12 @@ YOUR TASK HAS THREE PHASES. DO NOT SKIP ANY PHASE.
 
 WORK SILENTLY: Do not write commentary between searches. After all searching is done, write the dossier described below and nothing else.
 
+=== PHASE 0: SCHOOL IDENTITY LOCK (DO THIS FIRST) ===
+Before anything else, resolve EXACTLY which school this is:
+- Find the school's official name, street address, district, grade span, and official website. State them at the top of your dossier as the IDENTITY BLOCK.
+- Many schools share names or belong to multi-campus systems (sister campuses, East/West campuses, a middle or high school with the same brand). From this point on, EVERY search and every fact must be checked against the pinned identity.
+- Facts about a sister campus, the parent organization, or a similarly named school elsewhere are NOT facts about this school. Either drop them, or include them clearly labeled as "(system-level or sister-campus context, not this campus)". Never let them appear as this school's own facts.
+
 === RECENCY REQUIREMENT (CRITICAL) ===
 Old pages rank higher in search simply because they have existed longer, so a plain search will surface stale results. You must actively fight this:
 - The current school year is ${currentSchoolYear}. The prior year is ${priorSchoolYear}.
@@ -161,7 +167,9 @@ VERIFICATION SUMMARY
 One sentence on what your verification pass added or corrected.
 
 RULES:
-- Only include facts you can trace to a source you read. Never invent names, quotes, or events.
+- RECEIPTS RULE (ABSOLUTE): every factual line in your dossier must end with its receipt: [source: URL]. A fact you cannot attach a URL to does not go in the dossier at all. If two sources support a fact, list both.
+- QUOTES RULE: anything in quotation marks must be VERBATIM text from a page you actually read, with its receipt. If summarizing or paraphrasing, do not use quotation marks; write "paraphrase:" before it instead.
+- Never invent names, quotes, dates, or events.
 - No em dashes anywhere. Use colons, periods, or restructured sentences.`;
 }
 
@@ -183,6 +191,19 @@ export function buildFormatPrompt(params: {
 You are writing a research brief and outreach emails for Apex Leadership Co. Below is a verified research dossier about ${schoolName} in ${location}, prepared for franchisee ${franchiseeLabel}. Convert it into the JSON structure specified at the end. Use ONLY facts from the dossier.
 
 ${APEX_CONTEXT}
+
+=== APPLYING THE VERIFICATION REPORT (DO THIS FIRST) ===
+The dossier ends with an INDEPENDENT VERIFICATION REPORT. Apply it before writing anything:
+- CORRECTED claims: use ONLY the corrected version everywhere. The original is wrong.
+- CONFIRMED claims: treat as solid ("confirmed" status).
+- UNVERIFIABLE claims: keep them OUT of the read, the angle, and both emails. They may appear ONLY in the personalization bank with status "needs_verification".
+- Claims the report did not check keep their dossier receipt and get status "single_source".
+- If the report says the verification pass failed to run, mark everything "single_source" and note in the bank description that verification did not complete this run.
+
+=== TRUTH DISCIPLINE FOR THE BRIEF ===
+- Every fact you use must exist in the dossier WITH a receipt. A fact without a receipt does not exist.
+- Quotes: only text the dossier shows as verbatim-with-receipt may appear inside quotation marks. Paraphrases are never quoted.
+- Sister-campus or system-level items stay labeled as such everywhere they appear, including the bank.
 
 === EMAIL VOICE (this matters most) ===
 The emails must sound like a real, warm, cheerful woman who genuinely loves what she does. Sincere and human, never robotic, never salesy. Contractions are natural. Exclamation marks live mostly inside the pitch paragraph below; the opener earns at most one.
@@ -252,12 +273,12 @@ Return ONLY valid JSON (no markdown fences, no preamble) with this exact structu
   ],
   "personalization_bank": {
     "description": "One sentence reminding the franchisee these are verified details they can swap into any opener or P.S.",
-    "named_people": ["Every named person with role and tenure note, e.g. 'Kate Delgado, Fall Fundraiser Chair (new role)'"],
-    "money_trail": ["2-6 verified facts: what their fundraising bought or is for, amounts raised where found (with year), and their current fundraiser format"],
-    "recent_moments": ["2-6 specific recent events, achievements, or student moments with approximate timing"],
-    "their_words": ["2-6 actual phrases the school uses about itself, quoted in their own words"],
-    "calendar_timing": ["1-4 facts: fundraising window, PTA meeting schedule, upcoming events"],
-    "social_links": ["The school and PTA social page URLs found, each as a plain URL. These are shown to the franchisee with a reminder to check them for the freshest posts."],
+    "named_people": [{"text": "Every named person with role and tenure note, e.g. 'Kate Delgado, Fall Fundraiser Chair (new role)'", "status": "confirmed|single_source|needs_verification", "source": "URL or empty string"}],
+    "money_trail": [{"text": "What their fundraising bought or is for, amounts raised where found (with year), current fundraiser format", "status": "confirmed|single_source|needs_verification", "source": "URL or empty string"}],
+    "recent_moments": [{"text": "Specific recent event, achievement, or student moment with timing", "status": "confirmed|single_source|needs_verification", "source": "URL or empty string"}],
+    "their_words": [{"text": "Actual phrase the school uses about itself; quotation marks only if verbatim-with-receipt", "status": "confirmed|single_source|needs_verification", "source": "URL or empty string"}],
+    "calendar_timing": [{"text": "Fundraising window, PTA meeting schedule, or upcoming event", "status": "confirmed|single_source|needs_verification", "source": "URL or empty string"}],
+    "social_links": [{"text": "A social platform page URL only (facebook.com, instagram.com, x.com); never the school website", "status": "confirmed|single_source|needs_verification", "source": "URL or empty string"}],
     "opener_lines": ["3-4 ready-to-use opener lines, each 15-25 words, each using ONE verified detail, complete sentences ready to paste"],
     "ps_lines": ["2-3 ready-to-use P.S. lines, each 15-30 words, each starting with 'P.S.', ready to paste"]
   },
@@ -271,7 +292,7 @@ CRITICAL RULES:
 1. NO em dashes anywhere (use colons or restructure). NO emojis anywhere. No meta-narration filler phrases.
 2. PROGRAM LENGTH: 2 WEEKS / 10 school days. NEVER one week.
 3. EMAILS: Exactly TWO emails. Email 1 uses the grade-appropriate LOCKED PITCH verbatim. Email 2 uses the grade-appropriate SHORT PITCH verbatim. Do not modify the locked pitches. Personalization lives in the opener, the optional bridge sentence, the CTA close, and the P.S.
-4. ANTI-FABRICATION: Every personalization detail must come from the dossier. If a dossier section is empty, use empty arrays or empty strings plainly. The fact_strip may contain empty strings for unknown fields.
+4. ANTI-FABRICATION: Every personalization detail in the emails must come from bank items whose status is confirmed or single_source. Items marked needs_verification NEVER appear in emails. If a dossier section is empty, use empty arrays or empty strings plainly. The fact_strip may contain empty strings for unknown fields.
 5. MONEY LANGUAGE: NEVER use revenue, profit, percentage, split, financial upside, or dollar amounts. ONLY the approved phrases.
 6. GRADE LEVEL: K-5 uses the ELEMENTARY pitches (never naming a specific event; say a high-energy fitness event day). 6-8 uses the MIDDLE SCHOOL pitches (Color Games named). Middle school never mentions leadership lessons, character curriculum, or classroom visits.
 7. NAMED PEOPLE: List EVERY named person from the dossier in the bank, with tenure notes where known.

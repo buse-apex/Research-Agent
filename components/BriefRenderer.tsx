@@ -2,6 +2,27 @@
 
 import { track } from "../app/providers";
 
+type BankItem = string | { text: string; status?: string; source?: string };
+
+function itemText(i: BankItem): string { return typeof i === "string" ? i : (i && i.text) || ""; }
+function itemStatus(i: BankItem): string { return typeof i === "string" ? "" : (i && i.status) || ""; }
+function itemSource(i: BankItem): string { return typeof i === "string" ? "" : (i && i.source) || ""; }
+
+function reportInaccuracy(section: string, school: string) {
+  const note = typeof window !== "undefined" ? window.prompt("What looks wrong in \"" + section + "\"? One sentence helps us fix it.") : null;
+  if (note) {
+    track("brief_inaccuracy_reported", { section, school_name: school, note: note.slice(0, 500) });
+    if (typeof window !== "undefined") window.alert("Thank you. Logged.");
+  }
+}
+
+function StatusChip({ status }: { status: string }) {
+  if (!status) return null;
+  const label = status === "confirmed" ? "Confirmed" : status === "needs_verification" ? "Needs verification" : "Single source";
+  const cls = status === "confirmed" ? "chip chip-green" : status === "needs_verification" ? "chip chip-amber" : "chip chip-gray";
+  return <span className={cls}>{label}</span>;
+}
+
 interface BriefData {
   fact_strip?: {
     grade_span?: string;
@@ -16,12 +37,12 @@ interface BriefData {
   emails?: { type: string; subject: string; body: string }[];
   personalization_bank?: {
     description?: string;
-    named_people?: string[];
-    money_trail?: string[];
-    recent_moments?: string[];
-    their_words?: string[];
-    calendar_timing?: string[];
-    social_links?: string[];
+    named_people?: BankItem[];
+    money_trail?: BankItem[];
+    recent_moments?: BankItem[];
+    their_words?: BankItem[];
+    calendar_timing?: BankItem[];
+    social_links?: BankItem[];
     opener_lines?: string[];
     ps_lines?: string[];
   };
@@ -89,10 +110,15 @@ export function BriefRenderer({
     const fs = data.fact_strip || {};
     const bank = data.personalization_bank;
 
-    const bankSection = (label: string, items?: string[]) =>
+    const bankSection = (label: string, items?: BankItem[]) =>
       items && items.length
         ? `<h3>${label}</h3><ul>${items
-            .map((x) => `<li>${htmlEscape(x)}</li>`)
+            .map((x) => {
+              const st = itemStatus(x);
+              const tag = st === "confirmed" ? " [confirmed]" : st === "needs_verification" ? " [NEEDS VERIFICATION]" : st === "single_source" ? " [single source]" : "";
+              const src = itemSource(x) ? ` (${htmlEscape(itemSource(x))})` : "";
+              return `<li>${htmlEscape(itemText(x))}${tag}${src}</li>`;
+            })
             .join("")}</ul>`
         : "";
 
@@ -243,6 +269,7 @@ ${(data.sources || [])
       <div className="section-header">
         <span className="section-num">1</span>
         <h2 className="section-title">The Read</h2>
+        <button className="report-btn" onClick={() => reportInaccuracy("The Read", schoolName)}>Report an inaccuracy</button>
       </div>
       {data.the_read && (
         <div className="read-text">{escape(data.the_read)}</div>
@@ -268,6 +295,7 @@ ${(data.sources || [])
           <div className="section-header">
             <span className="section-num">2</span>
             <h2 className="section-title">Ready-to-Send Drafts</h2>
+            <button className="report-btn" onClick={() => reportInaccuracy("Emails", schoolName)}>Report an inaccuracy</button>
           </div>
           {data.emails.map((email, i) => (
             <div key={i} className="email-block">
@@ -297,6 +325,7 @@ ${(data.sources || [])
             <span className="section-num">3</span>
             <h2 className="section-title">Personalization Bank</h2>
             <span className="section-subtitle">Every fact lives here, once</span>
+            <button className="report-btn" onClick={() => reportInaccuracy("Personalization Bank", schoolName)}>Report an inaccuracy</button>
           </div>
           {bank.description && (
             <div className="bank-intro">{escape(bank.description)}</div>
@@ -307,7 +336,12 @@ ${(data.sources || [])
                 <div className="bank-card-label">{c.label}</div>
                 <ul>
                   {(c.items || []).map((item, ii) => (
-                    <li key={ii}>{escape(item)}</li>
+                    <li key={ii}>
+                      {escape(itemText(item))} <StatusChip status={itemStatus(item)} />
+                      {itemSource(item) ? (
+                        <a className="bank-src" href={itemSource(item)} target="_blank" rel="noopener noreferrer"> source</a>
+                      ) : null}
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -356,6 +390,7 @@ ${(data.sources || [])
           <div className="section-header">
             <span className="section-num">4</span>
             <h2 className="section-title">Sources</h2>
+            <button className="report-btn" onClick={() => reportInaccuracy("Sources", schoolName)}>Report an inaccuracy</button>
           </div>
           {data.verification_summary && (
             <div className="verification-line">
