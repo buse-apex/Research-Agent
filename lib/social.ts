@@ -8,7 +8,7 @@
 import type Anthropic from "@anthropic-ai/sdk";
 
 const APIFY_ACTOR = "apify~facebook-posts-scraper";
-const APIFY_TIMEOUT_MS = 90000; // hard cap so social can never sink the run
+const APIFY_TIMEOUT_MS = 60000; // hard cap so social can never sink the run
 const POSTS_FETCH_LIMIT = 60; // scan deep
 const POSTS_KEEP_SIGNAL = 14; // fundraiser-signal posts to keep
 const POSTS_KEEP_RECENT = 6;  // most recent other posts for voice/context
@@ -81,7 +81,7 @@ export async function scrapeFacebookPosts(pageUrl: string): Promise<SocialResult
   try {
     const endpoint = `https://api.apify.com/v2/acts/${APIFY_ACTOR}/run-sync-get-dataset-items?token=${encodeURIComponent(
       token
-    )}&timeout=80`;
+    )}&timeout=55`;
     const res = await fetch(endpoint, {
       method: "POST",
       signal: controller.signal,

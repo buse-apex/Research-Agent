@@ -15,6 +15,16 @@ const anthropic = new Anthropic({
 
 const RESEARCH_MODEL = "claude-sonnet-5";
 const REPAIR_MODEL = "claude-haiku-4-5"; // syntax repair needs speed, not depth
+const VERIFY_MODEL = "claude-haiku-4-5"; // verification is narrow checking work: fast model, big time savings
+
+// ---- TIME BUDGET GOVERNOR ----
+// Vercel caps this function at 300s. We track elapsed time and adapt so the
+// run ALWAYS finishes: the verification pass only runs if enough budget
+// remains, and skipping is visible in the brief (facts downgrade to
+// single_source), never silent.
+const TOTAL_BUDGET_MS = 290000; // leave headroom under the 300s ceiling
+const VERIFY_MIN_REMAINING_MS = 100000; // verification needs at least this much left
+const FORMAT_RESERVED_MS = 60000; // always reserve time for the format call
 
 export async function POST(req: NextRequest) {
   // Verify session
@@ -42,6 +52,9 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
+
+  const startedAt = Date.now();
+  const elapsed = () => Date.now() - startedAt;
 
   // Social URLs are login-walled and cannot be plain-fetched; route them to
   // the Apify deep dive instead (when enabled) and plain-fetch the rest.
@@ -122,7 +135,12 @@ export async function POST(req: NextRequest) {
     // It has no attachment to the original claims: its job is to confirm,
     // correct, or mark unverifiable. Its report is appended to the dossier.
     let verificationReport = "";
-    try {
+    const remainingForVerify = TOTAL_BUDGET_MS - elapsed() - FORMAT_RESERVED_MS;
+    if (remainingForVerify < VERIFY_MIN_REMAINING_MS) {
+      console.warn(`Skipping verification: only ${Math.round(remainingForVerify / 1000)}s of budget left`);
+      verificationReport =
+        "VERIFICATION PASS SKIPPED: the research phase used most of the time budget this run. Treat all claims as single_source and note in the bank description that verification did not run.";
+    } else try {
       const verifyPrompt = `You are an adversarial fact-checker. Below is a research dossier about ${schoolName} in ${location}, prepared for cold outreach. Your ONLY job is to re-verify its key claims with fresh web searches. Assume nothing in it is true until you confirm it.
 
 VERIFY THESE CLAIM TYPES, in priority order:
@@ -145,7 +163,7 @@ ${dossier}
 
       let vMessages: any[] = [{ role: "user", content: verifyPrompt }];
       let vRes = await anthropic.messages.create({
-        model: RESEARCH_MODEL,
+        model: VERIFY_MODEL,
         max_tokens: 8000,
         messages: vMessages,
         tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 6 } as any],
@@ -154,7 +172,7 @@ ${dossier}
       while ((vRes.stop_reason as string) === "pause_turn" && vGuard < 3) {
         vMessages = [...vMessages, { role: "assistant", content: vRes.content }];
         vRes = await anthropic.messages.create({
-          model: RESEARCH_MODEL,
+          model: VERIFY_MODEL,
           max_tokens: 8000,
           messages: vMessages,
           tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 6 } as any],
