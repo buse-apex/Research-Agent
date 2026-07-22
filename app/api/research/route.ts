@@ -232,12 +232,12 @@ ${dossier}
 
     const format = await anthropic.messages.create({
       model: RESEARCH_MODEL,
-      max_tokens: 16000,
+      max_tokens: 32000,
       messages: [{ role: "user", content: formatPrompt }],
     });
 
     if (format.stop_reason === "max_tokens") {
-      console.error("Format output truncated at max_tokens");
+      console.error("FORMAT TRUNCATED at 32k output tokens; brief JSON is unexpectedly huge");
       return NextResponse.json(
         { error: "The research brief came back incomplete. Please run it again." },
         { status: 500 }
@@ -252,6 +252,9 @@ ${dossier}
     // Parse JSON from the response (multi-stage: parse → extract → sanitize → model repair)
     const parsed = await parseModelJson(text);
     if (!parsed) {
+      console.error(
+        `BRIEF PARSE FAILED. format stop_reason=${format.stop_reason}, text length=${text.length}, head=${text.slice(0, 200)}, tail=${text.slice(-200)}`
+      );
       return NextResponse.json(
         { error: "The agent's output could not be read. Please run the research again." },
         { status: 500 }
@@ -366,7 +369,7 @@ async function parseModelJson(text: string): Promise<any | null> {
   try {
     const repair = await anthropic.messages.create({
       model: REPAIR_MODEL,
-      max_tokens: 8000,
+      max_tokens: 24000,
       messages: [
         {
           role: "user",
