@@ -7,7 +7,7 @@ import { buildResearchPrompt, buildFormatPrompt } from "@/lib/prompt";
 import { sanitizeUrls, fetchUrls, renderFetchedContext } from "@/lib/fetchUrls";
 import { splitSocialUrls, discoverFacebookUrl, scrapeFacebookPosts, renderSocialContext, SocialResult } from "@/lib/social";
 
-export const maxDuration = 300; // 5 minutes for long research
+export const maxDuration = 600; // Vercel Pro (fluid compute): give research room to be thorough
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -22,11 +22,11 @@ const VERIFY_MODEL = "claude-haiku-4-5"; // verification is narrow checking work
 // run ALWAYS finishes: the verification pass only runs if enough budget
 // remains, and skipping is visible in the brief (facts downgrade to
 // single_source), never silent.
-const TOTAL_BUDGET_MS = 290000; // leave headroom under the 300s ceiling
-const VERIFY_MIN_REMAINING_MS = 100000; // verification needs at least this much left
+const TOTAL_BUDGET_MS = 580000; // headroom under the 600s Pro ceiling
+const VERIFY_MIN_REMAINING_MS = 90000; // verification needs at least this much left
 const FORMAT_RESERVED_MS = 60000; // always reserve time for the format call
-const RESEARCH_DEADLINE_MS = 175000; // research (incl. continuations) must wrap by here
-const CONTINUATION_MAX_USES = 4; // continuations refine, they don't get a fresh full budget
+const RESEARCH_DEADLINE_MS = 420000; // research (incl. continuations) must wrap by here
+const CONTINUATION_MAX_USES = 6; // continuations refine, they don't get a fresh full budget
 
 export async function POST(req: NextRequest) {
   // Verify session
@@ -62,21 +62,27 @@ export async function POST(req: NextRequest) {
   // the Apify deep dive instead (when enabled) and plain-fetch the rest.
   const { social: socialUrls, regular: regularUrls } = splitSocialUrls(extraUrls);
 
-  // Guaranteed fetch of any franchisee-supplied non-social URLs (isolated failures).
-  const fetchedPages = await fetchUrls(regularUrls);
-  let fetchedContext = renderFetchedContext(fetchedPages);
-
-  // Optional social media deep dive (Apify). Fails gracefully in every branch.
-  let socialResult: SocialResult | null = null;
-  if (includeSocial) {
+  // PARALLEL PRE-STAGES: the plain-URL fetch and the social pipeline are
+  // independent, so they run concurrently instead of back to back.
+  const socialPipeline = async (): Promise<SocialResult | null> => {
+    if (!includeSocial) return null;
     let fbUrl = socialUrls.find((u) => /facebook\.com/i.test(u)) || null;
     if (!fbUrl) {
       fbUrl = await discoverFacebookUrl(anthropic, REPAIR_MODEL, schoolName, location);
     }
-    socialResult = fbUrl
+    return fbUrl
       ? await scrapeFacebookPosts(fbUrl)
       : { ok: false, note: "No official Facebook page could be found for this school." };
-  } else if (socialUrls.length) {
+  };
+
+  const [fetchedPages, socialResultRaw] = await Promise.all([
+    fetchUrls(regularUrls),
+    socialPipeline(),
+  ]);
+  let fetchedContext = renderFetchedContext(fetchedPages);
+  let socialResult: SocialResult | null = socialResultRaw;
+
+  if (!includeSocial && socialUrls.length) {
     // Deep dive off, but social links were pasted: surface them for manual checking.
     fetchedContext +=
       (fetchedContext ? "\n\n----\n\n" : "") +
@@ -92,7 +98,7 @@ export async function POST(req: NextRequest) {
     // ---- CALL 1: research with web search; output is a plain-text dossier ----
     // Heavy pre-stages (URL fetch, social scrape) eat the clock before research
     // starts; shrink the search budget accordingly so the total always fits.
-    const researchMaxUses = elapsed() > 45000 ? 6 : 8;
+    const researchMaxUses = 8; // Pro time budget: research always gets its full allowance
     const tools = [
       {
         type: "web_search_20250305",

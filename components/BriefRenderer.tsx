@@ -47,6 +47,7 @@ interface BriefData {
     ps_lines?: string[];
   };
   verification_summary?: string;
+  social_dive?: string;
   sources?: { title: string; url: string; deep_read?: boolean }[];
 }
 
@@ -202,6 +203,7 @@ ${
 
 <h2>4 · Sources</h2>
 ${data.verification_summary ? `<div class="verification"><b>Verified:</b> ${htmlEscape(data.verification_summary)}</div>` : ""}
+${data.social_dive ? `<div class="verification" style="background:#F0F4F8;border-color:#D3DEE9;color:#2B4A66;"><b>Social deep dive:</b> ${htmlEscape(data.social_dive)}</div>` : ""}
 ${(data.sources || [])
   .map(
     (s) =>
@@ -395,6 +397,11 @@ ${(data.sources || [])
           {data.verification_summary && (
             <div className="verification-line">
               <b>Verified:</b> {escape(data.verification_summary)}
+          {data.social_dive && (
+            <div className="verification-line" style={{ background: "#F0F4F8", borderColor: "#D3DEE9", color: "#2B4A66" }}>
+              <b>Social deep dive:</b> {escape(data.social_dive)}
+            </div>
+          )}
             </div>
           )}
           <div className="sources-card">

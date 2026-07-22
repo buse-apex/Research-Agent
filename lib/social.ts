@@ -8,7 +8,7 @@
 import type Anthropic from "@anthropic-ai/sdk";
 
 const APIFY_ACTOR = "apify~facebook-posts-scraper";
-const APIFY_TIMEOUT_MS = 60000; // hard cap so social can never sink the run
+const APIFY_TIMEOUT_MS = 130000; // matches the 90-post ask; Pro budget absorbs it
 const POSTS_FETCH_LIMIT = 90; // deep enough to span the school year on most pages
 const KEEP_RECENT_MAX = 15;   // recent-window posts to keep (last 2 months)
 const KEEP_SIGNAL_MAX = 12;   // fundraiser-signal posts to keep (school year)
@@ -54,7 +54,7 @@ export async function discoverFacebookUrl(
       messages: [
         {
           role: "user",
-          content: `Find the official Facebook page URL of the school "${schoolName}" in ${location}, or of its PTA/PTO if the school has no page. Search the web. Respond with ONLY the URL (must contain facebook.com) or the word NONE. No other text.`,
+          content: `Find the Facebook page where fundraising and parent-community news for the school "${schoolName}" in ${location} gets posted. PREFER the PTA/PTO page if one exists (search "[school or district name] PTA Facebook"); otherwise the school's or district's official page. Numbered URLs like facebook.com/p/Name-12345/ are valid and common for PTA pages. Search the web. Respond with ONLY the URL (must contain facebook.com) or the word NONE. No other text.`,
         },
       ],
       tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 3 } as any],
@@ -71,39 +71,58 @@ export async function discoverFacebookUrl(
   }
 }
 
+async function runApify(pageUrl: string, token: string, resultsLimit: number, serverTimeoutSec: number, clientTimeoutMs: number): Promise<{ ok: boolean; items?: any[]; note?: string }> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), clientTimeoutMs);
+  try {
+    const endpoint = `https://api.apify.com/v2/acts/${APIFY_ACTOR}/run-sync-get-dataset-items?token=${encodeURIComponent(
+      token
+    )}&timeout=${serverTimeoutSec}`;
+    const res = await fetch(endpoint, {
+      method: "POST",
+      signal: controller.signal,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ startUrls: [{ url: pageUrl }], resultsLimit }),
+    });
+    if (!res.ok) {
+      const t = await res.text().catch(() => "");
+      console.error("Apify error:", res.status, t.slice(0, 300));
+      return { ok: false, note: `Apify ${res.status}${/timeout|timed/i.test(t) ? " (timed out)" : ""}` };
+    }
+    const items: any[] = await res.json();
+    if (!Array.isArray(items) || items.length === 0) {
+      return { ok: false, note: "No public posts retrieved." };
+    }
+    return { ok: true, items };
+  } catch (e: any) {
+    const note = e?.name === "AbortError" ? "timed out" : e?.message || "fetch failed";
+    console.error("Apify scrape error:", e);
+    return { ok: false, note };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export async function scrapeFacebookPosts(pageUrl: string): Promise<SocialResult> {
   const token = process.env.APIFY_TOKEN;
   if (!token) {
     return { ok: false, note: "Social deep dive is not configured (missing APIFY_TOKEN)." };
   }
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), APIFY_TIMEOUT_MS);
-  try {
-    const endpoint = `https://api.apify.com/v2/acts/${APIFY_ACTOR}/run-sync-get-dataset-items?token=${encodeURIComponent(
-      token
-    )}&timeout=55`;
-    const res = await fetch(endpoint, {
-      method: "POST",
-      signal: controller.signal,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        startUrls: [{ url: pageUrl }],
-        resultsLimit: POSTS_FETCH_LIMIT,
-      }),
-    });
+  // Full-depth attempt, then a smaller retry if the page scrapes slowly.
+  // Some posts always beat no posts.
+  let attempt = await runApify(pageUrl, token, POSTS_FETCH_LIMIT, 120, APIFY_TIMEOUT_MS);
+  let retried = false;
+  if (!attempt.ok) {
+    console.warn(`Full scrape failed (${attempt.note}); retrying smaller.`);
+    attempt = await runApify(pageUrl, token, 30, 60, 70000);
+    retried = true;
+  }
+  if (!attempt.ok) {
+    return { ok: false, pageUrl, note: `Social scrape failed${retried ? " (including a smaller retry)" : ""}: ${attempt.note}.` };
+  }
 
-    if (!res.ok) {
-      const t = await res.text().catch(() => "");
-      console.error("Apify error:", res.status, t.slice(0, 300));
-      return { ok: false, pageUrl, note: `Social scrape failed (Apify ${res.status}).` };
-    }
-
-    const items: any[] = await res.json();
-    if (!Array.isArray(items) || items.length === 0) {
-      return { ok: false, pageUrl, note: "No public posts could be retrieved from the page." };
-    }
-
+  const items = attempt.items!;
     const all: SocialPost[] = items
       .map((it) => ({
         date: it.time || it.date || it.publishedTime || undefined,
@@ -158,24 +177,20 @@ export async function scrapeFacebookPosts(pageUrl: string): Promise<SocialResult
       return { ok: false, pageUrl, note: "Posts were returned but contained no readable text." };
     }
     return { ok: true, pageUrl, posts };
-  } catch (e: any) {
-    const note =
-      e?.name === "AbortError"
-        ? "Social scrape timed out; continuing without it."
-        : `Social scrape failed: ${e?.message || "unknown error"}.`;
-    console.error("Apify scrape error:", e);
-    return { ok: false, pageUrl, note };
-  } finally {
-    clearTimeout(timer);
+
+  if (!posts.length) {
+    return { ok: false, pageUrl, note: retried ? "Smaller retry returned posts but none had readable text." : "Posts were returned but contained no readable text." };
   }
+  const out: SocialResult = { ok: true, pageUrl, posts };
+  (out as any).retried = retried;
+  (out as any).postCount = posts.length;
+  return out;
 }
 
 export function renderSocialContext(result: SocialResult | null): string {
   if (!result) return "";
   if (!result.ok) {
-    return `SOCIAL MEDIA: The franchisee requested a social media deep dive, but it could not be completed (${
-      result.note || "unknown reason"
-    }). Do NOT invent social media content. Note the school's social links in the brief so the franchisee can check manually.`;
+    return `SOCIAL DIVE STATUS: requested but FAILED (${result.note || "unknown reason"})${result.pageUrl ? `, target page was ${result.pageUrl}` : ""}. Echo this status in the social_dive field of your output. Do NOT invent social media content. Note the school's social links in the brief so the franchisee can check manually.`;
   }
   const postsArr = result.posts || [];
   const recentCount = (postsArr as any)._recentCount ?? postsArr.length;
@@ -192,7 +207,10 @@ export function renderSocialContext(result: SocialResult | null): string {
       ? ["", "FUNDRAISER SIGNALS (from this school year): vendor and money evidence. Mine these for the money trail, vendor history, and amounts (with dates).", ...signalLines]
       : []),
   ];
-  return `SOCIAL MEDIA (Facebook posts, fetched for you from ${result.pageUrl}):
+  const retriedNote = (result as any).retried ? " (full scrape timed out; a smaller retry succeeded, so coverage is partial)" : "";
+  return `SOCIAL DIVE STATUS: ran successfully against ${result.pageUrl}, ${(result.posts || []).length} posts retrieved${retriedNote}. Echo this status in the social_dive field of your output.
+
+SOCIAL MEDIA (Facebook posts, fetched for you from ${result.pageUrl}):
 Treat these as primary, dated source material and cite the page as a deep-read source.
 FUNDRAISER SIGNALS ARE THE PRIORITY: posts mentioning fundraisers, donations, amounts raised, goals, and what the money bought are listed first below. Amounts the school raised with their own fundraisers are VALUABLE INTEL: capture them with their year in the money trail, the angle, and the bank. (The only money restriction is unchanged and applies to emails: no specific dollar figures or multipliers about what schools raise with Apex; approved phrases only. Keep specific dollar figures out of the email drafts.)
 

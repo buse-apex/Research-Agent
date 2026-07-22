@@ -113,6 +113,7 @@ Whether the school uses an outside fundraising vendor, especially Booster, is on
 - CHECK MULTIPLE YEARS: a school that used Booster in ${priorSchoolYear} but shows nothing this year is a switch-window signal, not a "no vendor" finding. State vendor history year by year as far back as your recency window allows.
 - PROBE THE SCHOOL'S OWN SITE FEED (critical, most-missed source): most school websites have a "Live Feed", "News", or announcements section holding years of posts, including fundraiser announcements, that never rank in generic searches and often cannot be fetched directly. Once you know the school's official domain from the identity block, run site-targeted searches that put the DOMAIN in the query alongside vendor and fundraiser terms, for example: "[domain] [school short name] Boosterthon", "[domain] fun run", "[domain] live feed fundraiser", "[school name] live feed Booster". Search result snippets WILL surface this feed content even when the pages themselves cannot be fetched. Run at least 2 such site-targeted searches before concluding a school has no vendor.
 - In VENDOR HISTORY, always state your evidence (the link or post that proves it) and your confidence: confirmed, likely, or unknown.
+- OPERATOR AMBIGUITY IS NEVER RESOLVED BY ASSUMPTION: a PTA funding, sponsoring, or promoting a fun run is NOT evidence the PTA operates it (PTAs are exactly who hires vendors like Booster). Unless a source names the operator, vendor history must say "operator unconfirmed" and the angle must NOT call the school vendor-free or "white space". An unconfirmed operator is a question for the franchisee to resolve, not a finding.
 
 === PHASE 1: BROAD RESEARCH ===
 Run AT LEAST 5 targeted web searches. Be thorough:
@@ -291,6 +292,7 @@ Return ONLY valid JSON (no markdown fences, no preamble) with this exact structu
     "opener_lines": ["3-4 ready-to-use opener lines, each 15-25 words, each using ONE verified detail, complete sentences ready to paste"],
     "ps_lines": ["2-3 ready-to-use P.S. lines, each 15-30 words, each starting with 'P.S.', ready to paste"]
   },
+  "social_dive": "One plain sentence for the franchisee: whether the Facebook deep dive ran, which page was scraped and how many posts, or exactly why it did not run. If no SOCIAL DIVE STATUS appears in the dossier, write: not requested this run.",
   "verification_summary": "One sentence on what the verification pass added or corrected.",
   "sources": [
     { "title": "Page or post title", "url": "https://...", "deep_read": true }
