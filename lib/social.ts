@@ -89,35 +89,66 @@ Respond with ONLY the single best URL (must contain facebook.com) or the word NO
   }
 }
 
-async function runApify(pageUrl: string, token: string, resultsLimit: number, serverTimeoutSec: number, clientTimeoutMs: number): Promise<{ ok: boolean; items?: any[]; note?: string }> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), clientTimeoutMs);
-  try {
-    const endpoint = `https://api.apify.com/v2/acts/${APIFY_ACTOR}/run-sync-get-dataset-items?token=${encodeURIComponent(
-      token
-    )}&timeout=${serverTimeoutSec}`;
-    const res = await fetch(endpoint, {
+function normalizeFacebookUrl(u: string): string {
+  // Facebook's newer /p/Name-<ID>/ page format stalls many scrapers.
+  // facebook.com/<ID> resolves directly to the same page and scrapes reliably.
+  const m = u.match(/facebook\.com\/p\/[^/]*?-(\d{8,})\/?/i);
+  if (m) return `https://www.facebook.com/${m[1]}`;
+  return u.split("?")[0];
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+// Start the actor, watch it, then HARVEST THE DATASET REGARDLESS of how the
+// run ended. A timed-out run's already-scraped posts are still in its dataset;
+// partial results always beat none.
+async function apifyScrapeWithHarvest(
+  pageUrl: string,
+  token: string,
+  resultsLimit: number,
+  maxWaitMs: number
+): Promise<{ items: any[]; status: string; note?: string }> {
+  const startRes = await fetch(
+    `https://api.apify.com/v2/acts/${APIFY_ACTOR}/runs?token=${encodeURIComponent(token)}&timeout=${Math.ceil(maxWaitMs / 1000)}`,
+    {
       method: "POST",
-      signal: controller.signal,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ startUrls: [{ url: pageUrl }], resultsLimit }),
-    });
-    if (!res.ok) {
-      const t = await res.text().catch(() => "");
-      console.error("Apify error:", res.status, t.slice(0, 300));
-      return { ok: false, note: `Apify ${res.status}${/timeout|timed/i.test(t) ? " (timed out)" : ""}` };
     }
-    const items: any[] = await res.json();
-    if (!Array.isArray(items) || items.length === 0) {
-      return { ok: false, note: "No public posts retrieved." };
-    }
-    return { ok: true, items };
+  );
+  if (!startRes.ok) {
+    const t = await startRes.text().catch(() => "");
+    return { items: [], status: "START_FAILED", note: `Apify start ${startRes.status}: ${t.slice(0, 150)}` };
+  }
+  const runId = (await startRes.json())?.data?.id;
+  if (!runId) return { items: [], status: "START_FAILED", note: "Apify did not return a run id" };
+
+  const t0 = Date.now();
+  let status = "RUNNING";
+  while (Date.now() - t0 < maxWaitMs) {
+    await sleep(5000);
+    try {
+      const st = await fetch(`https://api.apify.com/v2/actor-runs/${runId}?token=${encodeURIComponent(token)}`);
+      status = (await st.json())?.data?.status || status;
+      if (["SUCCEEDED", "FAILED", "TIMED-OUT", "ABORTED"].includes(status)) break;
+    } catch { /* transient poll failure: keep waiting */ }
+  }
+  if (status === "RUNNING" || status === "READY") {
+    // Our clock ran out first: abort so it stops billing, then harvest.
+    try {
+      await fetch(`https://api.apify.com/v2/actor-runs/${runId}/abort?token=${encodeURIComponent(token)}`, { method: "POST" });
+      status = "ABORTED_BY_US";
+    } catch { /* ignore */ }
+  }
+
+  try {
+    const itemsRes = await fetch(
+      `https://api.apify.com/v2/actor-runs/${runId}/dataset/items?token=${encodeURIComponent(token)}&clean=true&format=json`
+    );
+    const items: any[] = itemsRes.ok ? await itemsRes.json() : [];
+    return { items: Array.isArray(items) ? items : [], status };
   } catch (e: any) {
-    const note = e?.name === "AbortError" ? "timed out" : e?.message || "fetch failed";
-    console.error("Apify scrape error:", e);
-    return { ok: false, note };
-  } finally {
-    clearTimeout(timer);
+    return { items: [], status, note: e?.message || "dataset fetch failed" };
   }
 }
 
@@ -127,21 +158,24 @@ export async function scrapeFacebookPosts(pageUrl: string): Promise<SocialResult
     return { ok: false, note: "Social deep dive is not configured (missing APIFY_TOKEN)." };
   }
 
-  // Full-depth attempt, then a smaller retry if the page scrapes slowly.
-  // Some posts always beat no posts.
-  let attempt = await runApify(pageUrl, token, POSTS_FETCH_LIMIT, 120, APIFY_TIMEOUT_MS);
-  let retried = false;
-  if (!attempt.ok) {
-    console.warn(`Full scrape failed (${attempt.note}); retrying smaller.`);
-    attempt = await runApify(pageUrl, token, 30, 60, 70000);
-    retried = true;
-  }
-  if (!attempt.ok) {
-    return { ok: false, pageUrl, note: `Social scrape failed${retried ? " (including a smaller retry)" : ""}: ${attempt.note}.` };
+  const normalizedUrl = normalizeFacebookUrl(pageUrl);
+  const harvest = await apifyScrapeWithHarvest(normalizedUrl, token, POSTS_FETCH_LIMIT, 150000);
+
+  if (!harvest.items.length) {
+    console.error(`Apify harvest empty (status ${harvest.status})${harvest.note ? ": " + harvest.note : ""}`);
+    return {
+      ok: false,
+      pageUrl: normalizedUrl,
+      note: `Social scrape returned no posts (run status: ${harvest.status}). The page may block scraping or have no public posts.`,
+    };
   }
 
-  const items = attempt.items!;
-    const all: SocialPost[] = items
+  const partial = harvest.status !== "SUCCEEDED";
+  if (partial) {
+    console.warn(`Apify run ${harvest.status}; harvested ${harvest.items.length} partial posts anyway.`);
+  }
+  const items = harvest.items;
+  const all: SocialPost[] = items
       .map((it) => ({
         date: it.time || it.date || it.publishedTime || undefined,
         text: String(it.text || it.message || "").slice(0, MAX_POST_CHARS),
@@ -197,10 +231,10 @@ export async function scrapeFacebookPosts(pageUrl: string): Promise<SocialResult
     return { ok: true, pageUrl, posts };
 
   if (!posts.length) {
-    return { ok: false, pageUrl, note: retried ? "Smaller retry returned posts but none had readable text." : "Posts were returned but contained no readable text." };
+    return { ok: false, pageUrl: normalizedUrl, note: "Posts were returned but contained no readable text." };
   }
-  const out: SocialResult = { ok: true, pageUrl, posts };
-  (out as any).retried = retried;
+  const out: SocialResult = { ok: true, pageUrl: normalizedUrl, posts };
+  (out as any).partial = partial;
   (out as any).postCount = posts.length;
   return out;
 }
@@ -225,7 +259,7 @@ export function renderSocialContext(result: SocialResult | null): string {
       ? ["", "FUNDRAISER SIGNALS (from this school year): vendor and money evidence. Mine these for the money trail, vendor history, and amounts (with dates).", ...signalLines]
       : []),
   ];
-  const retriedNote = (result as any).retried ? " (full scrape timed out; a smaller retry succeeded, so coverage is partial)" : "";
+  const retriedNote = (result as any).partial ? " (the scrape ran out of time partway, so these are partial results; coverage of older posts may be incomplete)" : "";
   return `SOCIAL DIVE STATUS: ran successfully against ${result.pageUrl}, ${(result.posts || []).length} posts retrieved${retriedNote}. Echo this status in the social_dive field of your output.
 
 SOCIAL MEDIA (Facebook posts, fetched for you from ${result.pageUrl}):
