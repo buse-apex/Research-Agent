@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
     if (!includeSocial) return null;
     let fbUrl = socialUrls.find((u) => /facebook\.com/i.test(u)) || null;
     if (!fbUrl) {
-      fbUrl = await discoverFacebookUrl(anthropic, REPAIR_MODEL, schoolName, location);
+      fbUrl = await discoverFacebookUrl(anthropic, RESEARCH_MODEL, schoolName, location);
     }
     return fbUrl
       ? await scrapeFacebookPosts(fbUrl)
@@ -176,12 +176,17 @@ VERIFY THESE CLAIM TYPES, in priority order:
 4. Every quotation (find the quoted text; if you cannot find it verbatim, flag it)
 5. Dated facts and amounts (events, achievements, money trail)
 
+CALIBRATION RULES (critical):
+- A claim whose receipt is the school's or district's OWN official website (the domain in the dossier's identity block) is CONFIRMED by default. Do not spend searches re-proving official-site facts (staff names from the staff directory, taglines from the homepage, donations from the district's own donations page). Only mark such a claim CORRECTED if you find direct contradicting evidence.
+- Spend your searches where they matter: vendor and fundraiser claims, quotes, dollar amounts, and facts from third-party or aggregator sources.
+- UNVERIFIABLE means "I searched for this specific claim and found nothing supporting it." NEVER mark a claim UNVERIFIABLE just because you did not have budget to check it; claims you did not check must be OMITTED from your report entirely (they keep their original sourcing).
+
 For each claim you check, output one line:
 CONFIRMED: <claim> [source: URL]
 CORRECTED: <original claim> -> <corrected version> [source: URL]
-UNVERIFIABLE: <claim> (searched, could not confirm)
+UNVERIFIABLE: <claim> (I searched for this and found nothing supporting it)
 
-Check as many claims as your search budget allows, prioritizing the claim types in order. Do not add new research topics. Do not soften: if a claim is wrong, say CORRECTED; if you cannot find support, say UNVERIFIABLE. End with one line starting "SUMMARY:" describing overall reliability.
+Do not add new research topics. Do not soften: if a claim is wrong, say CORRECTED. End with one line starting "SUMMARY:" describing overall reliability.
 
 === DOSSIER TO VERIFY ===
 ${dossier}

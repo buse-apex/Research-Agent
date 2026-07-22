@@ -206,7 +206,7 @@ ${APEX_CONTEXT}
 The dossier ends with an INDEPENDENT VERIFICATION REPORT. Apply it before writing anything:
 - CORRECTED claims: use ONLY the corrected version everywhere. The original is wrong.
 - CONFIRMED claims: treat as solid ("confirmed" status).
-- UNVERIFIABLE claims: keep them OUT of the read, the angle, and both emails. They may appear ONLY in the personalization bank with status "needs_verification".
+- UNVERIFIABLE claims: keep them OUT of the read, the angle, and both emails. They may appear ONLY in the personalization bank with status "needs_verification". EXCEPTION: if a claim's dossier receipt is the school's or district's own official website, an UNVERIFIABLE verdict downgrades it to "single_source" (usable everywhere except emails) rather than excluding it; the school's own site is presumed accurate about itself.
 - Claims the report did not check keep their dossier receipt and get status "single_source".
 - If the report says the verification pass failed to run, mark everything "single_source" and note in the bank description that verification did not complete this run.
 

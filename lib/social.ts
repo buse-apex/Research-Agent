@@ -38,9 +38,11 @@ export function splitSocialUrls(urls: string[]): { social: string[]; regular: st
   return { social, regular };
 }
 
-// Cheap, fast discovery call: find the school's official Facebook page URL.
-// Page URLs are indexed by search engines even though page CONTENT is blocked,
-// so this is reliable where direct fetching is not.
+// Discovery: find the Facebook page where this school's fundraising and
+// parent-community life gets posted. This is a genuine two-step research task:
+// PTA pages are usually named after the DISTRICT or parent organization, not
+// the school ("Starpoint PTA" for Regan Intermediate), so the searcher must
+// first learn who runs the school, then hunt that name.
 export async function discoverFacebookUrl(
   anthropic: Anthropic,
   model: string,
@@ -50,21 +52,37 @@ export async function discoverFacebookUrl(
   try {
     const res = await anthropic.messages.create({
       model,
-      max_tokens: 300,
+      max_tokens: 600,
       messages: [
         {
           role: "user",
-          content: `Find the Facebook page where fundraising and parent-community news for the school "${schoolName}" in ${location} gets posted. PREFER the PTA/PTO page if one exists (search "[school or district name] PTA Facebook"); otherwise the school's or district's official page. Numbered URLs like facebook.com/p/Name-12345/ are valid and common for PTA pages. Search the web. Respond with ONLY the URL (must contain facebook.com) or the word NONE. No other text.`,
+          content: `Find the Facebook page where fundraising and parent-community news for the school "${schoolName}" in ${location} gets posted. Work in two steps:
+
+STEP 1: Search for the school to learn its school district or parent organization name (PTAs are usually named after the district, not the school).
+
+STEP 2: Hunt for the Facebook page, running searches in this priority order until one hits:
+1. "[district or organization name] PTA" Facebook
+2. "[school name] PTA" OR "[school name] PTO" Facebook
+3. "[school name]" official Facebook page
+4. "[district name]" official Facebook page
+
+Rules: a PTA/PTO page beats a school page beats a district page, because fundraising lives on PTA pages. Numbered URLs like facebook.com/p/Some-Name-12345/ are valid and very common for PTA pages; do not skip them. Do not settle for teachers'-union, alumni, or fan pages.
+
+Respond with ONLY the single best URL (must contain facebook.com) or the word NONE. No other text.`,
         },
       ],
-      tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 3 } as any],
+      tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 5 } as any],
     });
     const text = res.content
       .filter((b: any) => b.type === "text")
       .map((b: any) => b.text)
       .join(" ");
-    const match = text.match(/https?:\/\/(?:www\.)?facebook\.com\/[^\s"'<>)\]]+/i);
-    return match ? match[0].replace(/[.,;]+$/, "") : null;
+    const matches = text.match(/https?:\/\/(?:www\.)?facebook\.com\/[^\s"'<>)\]]+/gi) || [];
+    if (!matches.length) return null;
+    // Prefer a URL that looks like a PTA/PTO page if several appear.
+    const cleaned = matches.map((m) => m.replace(/[.,;]+$/, ""));
+    const pta = cleaned.find((u) => /pta|pto/i.test(u));
+    return pta || cleaned[0];
   } catch (e) {
     console.error("Facebook discovery failed:", e);
     return null;

@@ -24,6 +24,32 @@ export default function HomePage() {
   const [franchiseeName, setFranchiseeName] = useState("");
   const [extraUrls, setExtraUrls] = useState("");
   const [includeSocial, setIncludeSocial] = useState(false);
+
+  // Persist form inputs across reloads/deploys so testers and franchisees
+  // don't lose their setup every time the page refreshes.
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem("apex_research_form");
+      if (saved) {
+        const f = JSON.parse(saved);
+        if (f.schoolName) setSchoolName(f.schoolName);
+        if (f.location) setLocation(f.location);
+        if (f.franchiseeName) setFranchiseeName(f.franchiseeName);
+        if (f.extraUrls) setExtraUrls(f.extraUrls);
+        if (typeof f.includeSocial === "boolean") setIncludeSocial(f.includeSocial);
+      }
+    } catch { /* never break the form over storage */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        "apex_research_form",
+        JSON.stringify({ schoolName, location, franchiseeName, extraUrls, includeSocial })
+      );
+    } catch { /* ignore */ }
+  }, [schoolName, location, franchiseeName, extraUrls, includeSocial]);
   const [meetingsData, setMeetingsData] = useState<any | null>(null);
   const [meetingsLoading, setMeetingsLoading] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -164,6 +190,7 @@ export default function HomePage() {
   };
 
   const handleClear = () => {
+    try { sessionStorage.removeItem("apex_research_form"); } catch { /* ignore */ }
     setSchoolName("");
     setLocation("");
     setExtraUrls("");
