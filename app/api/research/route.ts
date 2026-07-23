@@ -8,6 +8,7 @@ import { sanitizeUrls, fetchUrls, renderFetchedContext } from "@/lib/fetchUrls";
 import { splitSocialUrls, discoverFacebookUrl, scrapeFacebookPosts, renderSocialContext, SocialResult } from "@/lib/social";
 import { markDeadLinks } from "@/lib/linkCheck";
 import { fundraisingSweep } from "@/lib/sweep";
+import { googleFundraiserResults } from "@/lib/googleSearch";
 
 export const maxDuration = 600; // Vercel Pro (fluid compute): give research room to be thorough
 
@@ -82,11 +83,15 @@ export async function POST(req: NextRequest) {
   // pipeline at the verification stage (whose web search can chase any vendor
   // lead the posts reveal). Zero information lost, minutes reclaimed.
   const socialPromise = socialPipeline();
-  const [fetchedPages, sweepFindings] = await Promise.all([
+  const [fetchedPages, sweepFindings, googleResults] = await Promise.all([
     fetchUrls(regularUrls),
     fundraisingSweep(anthropic, schoolName, location),
+    googleFundraiserResults(schoolName, location),
   ]);
   let fetchedContext = renderFetchedContext(fetchedPages);
+  if (googleResults) {
+    fetchedContext += (fetchedContext ? "\n\n----\n\n" : "") + googleResults;
+  }
   if (sweepFindings) {
     fetchedContext +=
       (fetchedContext ? "\n\n----\n\n" : "") +
@@ -291,6 +296,7 @@ ${dossierWithSocial}
         schoolLocation: location,
         franchiseeName: franchiseeName || null,
         briefData: parsed,
+        dossier: verifiedDossier.slice(0, 400000),
       });
     } catch (dbErr) {
       console.error("DB log failed:", dbErr);

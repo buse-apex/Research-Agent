@@ -28,6 +28,7 @@ function ensureSchema(): Promise<void> {
       await sql`ALTER TABLE research_requests ADD COLUMN IF NOT EXISTS school_location TEXT`;
       await sql`ALTER TABLE research_requests ADD COLUMN IF NOT EXISTS franchisee_name TEXT`;
       await sql`ALTER TABLE research_requests ADD COLUMN IF NOT EXISTS brief_data JSONB`;
+    await sql`ALTER TABLE research_requests ADD COLUMN IF NOT EXISTS dossier TEXT`;
       await sql`ALTER TABLE research_requests ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW()`;
     })().catch((e) => {
       schemaReady = null; // allow retry on next call
@@ -55,18 +56,20 @@ export async function logResearchRequest(params: {
   schoolLocation: string;
   franchiseeName: string | null;
   briefData: any;
+  dossier?: string;
 }): Promise<number> {
   await ensureSchema();
   const result = await sql`
     INSERT INTO research_requests (
-      user_email, user_name, school_name, school_location, franchisee_name, brief_data
+      user_email, user_name, school_name, school_location, franchisee_name, brief_data, dossier
     ) VALUES (
       ${params.userEmail},
       ${params.userName},
       ${params.schoolName},
       ${params.schoolLocation},
       ${params.franchiseeName},
-      ${JSON.stringify(params.briefData)}
+      ${JSON.stringify(params.briefData)},
+      ${params.dossier || null}
     )
     RETURNING id
   `;
