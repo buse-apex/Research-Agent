@@ -108,12 +108,33 @@ Old pages rank higher in search simply because they have existed longer, so a pl
 === VENDOR DETECTION (this is a priority finding) ===
 Whether the school uses an outside fundraising vendor, especially Booster, is one of the most valuable facts in this research. Schools rarely announce it plainly, so hunt for it:
 - BRAND VARIANTS: Boosterthon rebranded to "Booster". Search BOTH names: "[school] Boosterthon", "[school] Booster fun run", "[school] Booster Kickoff". A result matching either brand is the same vendor.
-- PLEDGE LINKS ARE PROOF: a link to mybooster.com or funrun.com on any school/PTA page or post means the school uses Booster, even if no post ever says the word. Similarly: 99pledges.com (99Pledges), getmovinfundhub.com (Get Movin'), raisecraze.com (Raise Craze), myapexevent.com (Apex, meaning they are already a customer!). Search "[school] mybooster" explicitly.
+- FUNDRAISING PLATFORMS AND NONPROFIT RECORDS ARE PRIMARY EVIDENCE: the PTA/PTO's own fundraising footprint often lives OFF the school site, in general search results. You MUST run dedicated searches for these and open the results, not just glance at snippets:
+  * Donation platforms (each indicates an active fundraising channel): givebutter.com, classful.com, zeffy.com, gofundme.com, 99pledges.com, memberhub.com / givebacks.com, cheddarup.com, snap-raise.com / snap! raise, squareup.com/store. Search "[school or PTO name] givebutter", "[school] classful", "[school] gofundme".
+  * Nonprofit tax records (these often reveal actual annual revenue, the money trail): a 990 filing on propublica.org/nonprofits, guidestar.org, philanthropy.org, or causeiq.com means the PTO is a registered 501(c)(3). Search "[school] PTO 990" and "[school] parent teacher organization nonprofit". Report any revenue figure found, with its filing year.
+  * Fundraising vendors: mybooster.com or funrun.com (Booster), getmovinfundhub.com (Get Movin'), raisecraze.com (Raise Craze), myapexevent.com (Apex, meaning they are already a customer). Search "[school] mybooster" explicitly.
+  A donation-platform page or a 990 filing is PROOF of fundraising activity even if the school site never mentions it.
 - UNBRANDED FUN RUNS DEMAND A FOLLOW-UP: if the school announces a "fun run", "glow run", "color run", or "dance-a-thon" with no vendor named, that event has an operator. Run at least one more search to identify who ran it ("[school] fun run 2025 vendor OR Booster OR PTA"). If you still cannot tell, report the event AND state plainly that the operator is unidentified: "They ran a fun run in [year]; could not confirm whether it was vendor-run or PTA-run."
 - CHECK MULTIPLE YEARS: a school that used Booster in ${priorSchoolYear} but shows nothing this year is a switch-window signal, not a "no vendor" finding. State vendor history year by year as far back as your recency window allows.
 - PROBE THE SCHOOL'S OWN SITE FEED (critical, most-missed source): most school websites have a "Live Feed", "News", or announcements section holding years of posts, including fundraiser announcements, that never rank in generic searches and often cannot be fetched directly. Once you know the school's official domain from the identity block, run site-targeted searches that put the DOMAIN in the query alongside vendor and fundraiser terms, for example: "[domain] [school short name] Boosterthon", "[domain] fun run", "[domain] live feed fundraiser", "[school name] live feed Booster". Search result snippets WILL surface this feed content even when the pages themselves cannot be fetched. Run at least 2 such site-targeted searches before concluding a school has no vendor.
 - In VENDOR HISTORY, always state your evidence (the link or post that proves it) and your confidence: confirmed, likely, or unknown.
 - OPERATOR AMBIGUITY IS NEVER RESOLVED BY ASSUMPTION: a PTA funding, sponsoring, or promoting a fun run is NOT evidence the PTA operates it (PTAs are exactly who hires vendors like Booster). Unless a source names the operator, vendor history must say "operator unconfirmed" and the angle must NOT call the school vendor-free or "white space". An unconfirmed operator is a question for the franchisee to resolve, not a finding.
+
+=== GENERAL FUNDRAISER SWEEP (mandatory) ===
+Run a plain-language sweep the way a person would: search "[school name] [city] fundraiser" and "[school name] PTO fundraiser ${currentYear}". Then look at the TOP 3 non-aggregator results. For each one whose title or snippet suggests real fundraising content (a PTO page, a donation platform, a news story, a nonprofit record), run ONE domain-targeted follow-up search to read that site's content more deeply. Cap these follow-ups at 3 total; skip aggregators and results whose snippets clearly have nothing.
+
+=== DIY AND NON-VENDOR FUNDRAISERS (recognition lens, costs no extra searches) ===
+Vendor events are not the only fundraising that matters. While reading EVERYTHING in this research, actively recognize and record these fundraiser types, each with its year and what the money bought if stated:
+- Catalog and product sales: wrapping paper, cookie dough, Charleston Wrap, Yankee Candle, World's Finest Chocolate, popcorn, spirit wear
+- Event fundraisers run in-house: fall festival, carnival, auction, gala, bingo night, movie night, talent show with admission, walk-a-thon, read-a-thon, jog-a-thon run by the PTA itself
+- Passive and partner channels: Scholastic book fair, restaurant spirit nights, Box Tops, grocery rewards, Square 1 Art, school pictures revenue share
+- Online channels: Givebutter, Classful, GoFundMe, Zeffy, Cheddar Up, MemberHub/Givebacks pages
+A school running several of these DIY channels with no vendor is the STRONGEST burden-relief prospect: volunteers doing everything by hand. Say exactly that in the angle when the pattern appears, and list the DIY channels found in the money trail.
+
+=== SEARCH DEPTH RULE (do not stop at directory aggregators) ===
+Directory sites (US News, GreatSchools, Niche, Public School Review, elementaryschools.org) are low-value: they give demographics, not fundraising or people. Do NOT let them satisfy a search. For each key question, look PAST the first aggregator results and open: the school's own current website, the PTA/PTO's page or platform, nonprofit records, and local news. If the first search is all aggregators, run another with better terms before concluding "nothing found."
+
+=== CURRENT PRINCIPAL RULE (accuracy-critical) ===
+The principal's name is high-stakes: the emails address this person. You MUST get the CURRENT principal from the school's OWN official website (staff/administration/about page) or a dated current-year source. NEVER hand back a principal name from a filing more than one school year old and present it as current; if the only name you find is old, mark it needs_verification and say so. Cross-check the campus identity first (city, state, district) so you do not report a same-named school in another state.
 
 === PHASE 1: BROAD RESEARCH ===
 Run AT LEAST 5 targeted web searches. Be thorough:
@@ -123,6 +144,7 @@ Run AT LEAST 5 targeted web searches. Be thorough:
 4. Recent news, awards, achievements, events, with the current year in the query (e.g. [school name] news ${currentYear})
 5. The school's and PTA's social media accounts (Facebook, Instagram): find the page links, and capture anything public that search surfaces from them
 6. Current-year fundraiser first (e.g. [school name] fundraiser ${currentYear}), then fundraising history. Vendor names to probe: Booster AND Boosterthon (same company, rebranded), Apex, My Fun Run, 99Pledges, Get Movin', catalog/magazine sales, GoFundMe, capital projects
+7. Fundraising-platform and nonprofit-record searches (run these explicitly, they surface the PTO money footprint): "[school or PTO] givebutter", "[school] classful", "[school] gofundme", "[school] PTO 990", "[school] parent teacher organization nonprofit revenue"
 
 === PHASE 2: DRAFT FINDINGS ===
 Compose your analysis internally based on Phase 1.
@@ -254,6 +276,15 @@ Every personalization detail in emails and the personalization_bank MUST come fr
 ${dossier}
 === END DOSSIER ===
 
+=== SUBJECT LINES (for the personalization bank) ===
+Generate 3 to 4 subject-line options a franchisee can choose from. Their only job is to get a busy principal or PTA leader to open on a phone.
+RULES:
+- Max 45 characters. Shorter is better. Front-load the specific or local detail.
+- Warm and human, never salesy. One flavor each, ideally: (a) notice/congratulate something specific and verified, (b) local neighbor angle using the town, (c) light curiosity, (d) their own words reflected back.
+- Personalize from a VERIFIED detail when one exists; give the subject the same status as the fact it draws on. When research is thin, a warm general line is fine ("A hello from a neighbor in [town]") with single_source status.
+- NEVER: all caps, emojis, a dollar amount, fake urgency ("act now"), or vendor-blast phrasing ("Fundraising Opportunity for [School]").
+- No em dashes.
+
 Return ONLY valid JSON (no markdown fences, no preamble) with this exact structure:
 
 {
@@ -282,6 +313,8 @@ Return ONLY valid JSON (no markdown fences, no preamble) with this exact structu
       "body": "Write EMAIL 2 exactly per the EMAIL STRUCTURE section above, in the EMAIL VOICE. No em dashes. No emojis."
     }
   ],
+  BANK CONTENT RULE: the personalization bank holds ONLY positive, usable facts a franchisee can drop into an email (a name, an event, a phrase, a date, an amount). Statements of absence ("no fundraiser found", "no vendor confirmed", "nothing surfaced in search") NEVER appear as bank items; they belong in the angle. If a category has no positive facts, return an empty array for it.
+
   "personalization_bank": {
     "description": "One sentence reminding the franchisee these are verified details they can swap into any opener or P.S.",
     "named_people": [{"text": "Every named person with role and tenure note, e.g. 'Kate Delgado, Fall Fundraiser Chair (new role)'", "status": "confirmed|single_source|needs_verification", "source": "URL or empty string"}],
@@ -290,6 +323,7 @@ Return ONLY valid JSON (no markdown fences, no preamble) with this exact structu
     "their_words": [{"text": "Actual phrase the school uses about itself; quotation marks only if verbatim-with-receipt", "status": "confirmed|single_source|needs_verification", "source": "URL or empty string"}],
     "calendar_timing": [{"text": "Fundraising window, PTA meeting schedule, or upcoming event", "status": "confirmed|single_source|needs_verification", "source": "URL or empty string"}],
     "social_links": [{"text": "A social platform page URL only (facebook.com, instagram.com, x.com); never the school website", "status": "confirmed|single_source|needs_verification", "source": "URL or empty string"}],
+    "subject_lines": [{"text": "A short email subject line, max 45 characters, warm and specific", "status": "confirmed|single_source|needs_verification", "source": "URL or empty string"}],
     "opener_lines": ["3-4 ready-to-use opener lines, each 15-25 words, each using ONE verified detail, complete sentences ready to paste"],
     "ps_lines": ["2-3 ready-to-use P.S. lines, each 15-30 words, each starting with 'P.S.', ready to paste"]
   },

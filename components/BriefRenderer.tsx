@@ -43,6 +43,7 @@ interface BriefData {
     their_words?: BankItem[];
     calendar_timing?: BankItem[];
     social_links?: BankItem[];
+    subject_lines?: BankItem[];
     opener_lines?: string[];
     ps_lines?: string[];
   };
@@ -187,11 +188,14 @@ ${bankSection("Their Words", bank?.their_words)}
 ${bankSection("Calendar &amp; Timing", bank?.calendar_timing)}
 ${bankSection("Social to Check", bank?.social_links)}
 ${
-  bank?.opener_lines?.length
+  (bank?.subject_lines?.length
+    ? `<h3>Subject Lines</h3><ul>${bank.subject_lines.map((x) => `<li>${htmlEscape(itemText(x))}</li>`).join("")}</ul>`
+    : "") +
+  (bank?.opener_lines?.length
     ? `<h3>Ready-to-Use Opener Lines</h3>${bank.opener_lines
         .map((x) => `<div class="bank-line">${htmlEscape(x)}</div>`)
         .join("")}`
-    : ""
+    : "")
 }
 ${
   bank?.ps_lines?.length
@@ -332,16 +336,43 @@ ${(data.sources || [])
           {bank.description && (
             <div className="bank-intro">{escape(bank.description)}</div>
           )}
+          <div className="bank-legend">Dot colors: <span className="dot dot-green"></span> confirmed &nbsp; <span className="dot dot-gray"></span> single source &nbsp; <span className="dot dot-amber"></span> verify before using</div>
+          {bank.subject_lines && bank.subject_lines.length > 0 && (
+            <div className="ready-line-block subject-block">
+              <div className="ready-line-label">Subject lines to grab attention</div>
+              {bank.subject_lines.map((item, si) => (
+                <div key={si} className="ready-line">
+                  <span className={
+                    "sl-dot " + (itemStatus(item) === "confirmed" ? "dot-green" :
+                    itemStatus(item) === "needs_verification" ? "dot-amber" : "dot-gray")
+                  }></span>
+                  <div className="ready-line-text"><b>{escape(itemText(item))}</b></div>
+                  <button
+                    id={`subject-btn-${si}`}
+                    className="copy-line-btn"
+                    onClick={() => copyLine(itemText(item), `subject-btn-${si}`)}
+                  >
+                    Copy
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="bank-grid">
             {bankCards.map((c, ci) => (
               <div key={ci} className="bank-card">
                 <div className="bank-card-label">{c.label}</div>
                 <ul>
                   {(c.items || []).map((item, ii) => (
-                    <li key={ii}>
-                      {escape(itemText(item))} <StatusChip status={itemStatus(item)} />
+                    <li key={ii} className={
+                      itemStatus(item) === "confirmed" ? "li-confirmed" :
+                      itemStatus(item) === "needs_verification" ? "li-verify" :
+                      itemStatus(item) ? "li-single" : ""
+                    }>
+                      {escape(itemText(item))}
+                      {itemStatus(item) === "needs_verification" && <span className="verify-note"> · verify before using</span>}
                       {itemSource(item) && !(typeof item === "object" && (item as any).source_dead) ? (
-                        <a className="bank-src" href={itemSource(item)} target="_blank" rel="noopener noreferrer"> source</a>
+                        <a className="bank-src" href={itemSource(item)} target="_blank" rel="noopener noreferrer" title="Open source">↗</a>
                       ) : null}
                     </li>
                   ))}
