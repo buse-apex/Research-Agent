@@ -61,6 +61,10 @@ export async function googleFundraiserResults(
     `"${schoolName}" ${location} fun run`,
     `"${schoolName}" ${location} Booster`,
     `"${schoolName}" ${location} donations`,
+    `"${schoolName}" ${location} volunteer`,
+    `"${schoolName}" ${location} funds`,
+    `"${schoolName}" ${location} budget`,
+    `"${schoolName}" ${location} investments`,
   ];
   const vendorSiteQueries = [
     `site:mybooster.com "${schoolName}"`,

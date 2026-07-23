@@ -19,6 +19,7 @@ export async function fundraisingSweep(
 1. "${schoolName} ${location} fundraiser"
 2. "${schoolName} PTO givebutter OR classful OR gofundme OR ptboard"
 3. "${schoolName} PTO 990"
+4. "${schoolName} ${location} PTO budget OR funds OR volunteer"
 
 From ALL results, report every fundraising-relevant finding as one line each:
 URL | what it is | which school it belongs to (city/state)
