@@ -109,7 +109,7 @@ Old pages rank higher in search simply because they have existed longer, so a pl
 Whether the school uses an outside fundraising vendor, especially Booster, is one of the most valuable facts in this research. Schools rarely announce it plainly, so hunt for it:
 - BRAND VARIANTS: Boosterthon rebranded to "Booster". Search BOTH names: "[school] Boosterthon", "[school] Booster fun run", "[school] Booster Kickoff". A result matching either brand is the same vendor.
 - FUNDRAISING PLATFORMS AND NONPROFIT RECORDS ARE PRIMARY EVIDENCE: the PTA/PTO's own fundraising footprint often lives OFF the school site, in general search results. You MUST run dedicated searches for these and open the results, not just glance at snippets:
-  * Donation platforms (each indicates an active fundraising channel): givebutter.com, classful.com, zeffy.com, gofundme.com, 99pledges.com, memberhub.com / givebacks.com, cheddarup.com, snap-raise.com / snap! raise, squareup.com/store. Search "[school or PTO name] givebutter", "[school] classful", "[school] gofundme".
+  * Donation platforms (each indicates an active fundraising channel): givebutter.com, classful.com, ptboard.com, zeffy.com, gofundme.com, 99pledges.com, memberhub.com / givebacks.com, cheddarup.com, snap-raise.com / snap! raise, squareup.com/store. Search "[school or PTO name] givebutter", "[school] classful", "[school] gofundme".
   * Nonprofit tax records (these often reveal actual annual revenue, the money trail): a 990 filing on propublica.org/nonprofits, guidestar.org, philanthropy.org, or causeiq.com means the PTO is a registered 501(c)(3). Search "[school] PTO 990" and "[school] parent teacher organization nonprofit". Report any revenue figure found, with its filing year.
   * Fundraising vendors: mybooster.com or funrun.com (Booster), getmovinfundhub.com (Get Movin'), raisecraze.com (Raise Craze), myapexevent.com (Apex, meaning they are already a customer). Search "[school] mybooster" explicitly.
   A donation-platform page or a 990 filing is PROOF of fundraising activity even if the school site never mentions it.
@@ -280,8 +280,8 @@ ${dossier}
 Generate 3 to 4 subject-line options a franchisee can choose from. Their only job is to get a busy principal or PTA leader to open on a phone.
 RULES:
 - Max 45 characters. Shorter is better. Front-load the specific or local detail.
-- Warm and human, never salesy. One flavor each, ideally: (a) notice/congratulate something specific and verified, (b) local neighbor angle using the town, (c) light curiosity, (d) their own words reflected back.
-- Personalize from a VERIFIED detail when one exists; give the subject the same status as the fact it draws on. When research is thin, a warm general line is fine ("A hello from a neighbor in [town]") with single_source status.
+- Warm and human, never salesy. One flavor each, ideally: (a) notice/congratulate something specific and verified, (b) local angle tied to a verified school detail, (c) light curiosity, (d) their own words reflected back.
+- EVERY subject line must be built on a verified, school-specific detail from the dossier; give the subject the same status as the fact it draws on. NO generic filler lines ("A hello from a neighbor", "Quick idea for your school"). If only one or two verified details exist, output only one or two subject lines. Fewer and personal beats many and generic.
 - NEVER: all caps, emojis, a dollar amount, fake urgency ("act now"), or vendor-blast phrasing ("Fundraising Opportunity for [School]").
 - No em dashes.
 

@@ -7,6 +7,7 @@ import { buildResearchPrompt, buildFormatPrompt } from "@/lib/prompt";
 import { sanitizeUrls, fetchUrls, renderFetchedContext } from "@/lib/fetchUrls";
 import { splitSocialUrls, discoverFacebookUrl, scrapeFacebookPosts, renderSocialContext, SocialResult } from "@/lib/social";
 import { markDeadLinks } from "@/lib/linkCheck";
+import { fundraisingSweep } from "@/lib/sweep";
 
 export const maxDuration = 600; // Vercel Pro (fluid compute): give research room to be thorough
 
@@ -81,8 +82,18 @@ export async function POST(req: NextRequest) {
   // pipeline at the verification stage (whose web search can chase any vendor
   // lead the posts reveal). Zero information lost, minutes reclaimed.
   const socialPromise = socialPipeline();
-  const fetchedPages = await fetchUrls(regularUrls);
+  const [fetchedPages, sweepFindings] = await Promise.all([
+    fetchUrls(regularUrls),
+    fundraisingSweep(anthropic, schoolName, location),
+  ]);
   let fetchedContext = renderFetchedContext(fetchedPages);
+  if (sweepFindings) {
+    fetchedContext +=
+      (fetchedContext ? "\n\n----\n\n" : "") +
+      `FUNDRAISING SWEEP RESULTS (pre-run for you; treat as primary leads):
+Verify each belongs to THIS campus (same city/state) before using; lines marked WRONG SCHOOL must be ignored entirely. For each relevant lead, follow up with your own searches to read more, and fold confirmed findings into the money trail, vendor history, and angle with receipts.
+${sweepFindings}`;
+  }
   let socialResult: SocialResult | null = null;
 
   if (!includeSocial && socialUrls.length) {
