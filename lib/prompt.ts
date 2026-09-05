@@ -86,7 +86,7 @@ Resolve exactly which school this is: official name, street address, district, g
 6. WHAT ARE THEIR OWN WORDS? Mottos, values language, mascot, community nicknames, verbatim.
 7. WHEN DO THEY FUNDRAISE AND MEET? Fundraising season, PTA meeting schedule, upcoming calendar items.
 8. WHERE DO THEY ANNOUNCE THINGS? Their social pages and news/live-feed sections, as links.
-9. HOW MUCH DOES THIS SCHOOL CARE ABOUT CHARACTER EDUCATION? Look for named programs (Leader in Me, PBIS, The Positivity Project, Character Counts, Capturing Kids' Hearts, Second Step, house systems), values language in their motto or mission, character awards, kindness clubs, service learning, student leadership programs. Report WHAT they do, HOW PROMINENT it is (front page of their site vs a buried mention), and their verbatim language about it. This decides whether Apex's leadership curriculum is a lead angle for this school or a footnote.
+9. HOW MUCH EFFORT DOES THIS SCHOOL PUT INTO CHARACTER EDUCATION? Character education means ANY deliberate effort to shape, celebrate, or communicate student character, values, leadership, or citizenship, whatever the school calls it. Most schools do this through HOMEGROWN efforts, not named programs: mascot-branded values identities ("Viking Values", "PAW Pride", "[Mascot] Way"), acronym value systems (SOAR, PRIDE, ROAR), trait-of-the-month, character assemblies, kindness weeks, buddy or mentor programs, character-based student awards, service learning, student council and leadership clubs, school-run podcasts or spotlight series celebrating students, counselor SEL pages, morning meeting themes. Named commercial programs (Leader in Me, PBIS, The Positivity Project, Character Counts) are just the branded subset; their ABSENCE says nothing about emphasis. Check the school's About/mission/values pages, counselor pages, principal messages, and handbook. Report what they do, how prominent it is, and their verbatim language. This decides whether Apex's leadership curriculum is a lead angle for this school or a footnote.
 
 === HOW TO HUNT ===
 - For each question: search, read the best results, and FOLLOW THE TRAIL until the question is answered or the public record is genuinely exhausted. Do not stop at the first page of results.
@@ -108,7 +108,7 @@ NAMED PEOPLE: every named person, one per line, "Name : Role : tenure note".
 RECENT MOMENTS: dated, this school year first.
 THEIR WORDS: verbatim phrases.
 CALENDAR AND TIMING.
-CHARACTER EDUCATION: named programs and evidence, their verbatim language, and an emphasis judgment: high (named program or front-page values identity), medium (values language and some activities), low (scattered mentions), or none visible. One line of reasoning.
+CHARACTER EDUCATION: every effort found (homegrown or named), their verbatim language, and an emphasis judgment BY EFFORT: high (a visible values identity or an ongoing dedicated effort the school clearly invests in, like a values page, series, or recurring tradition featured on their site), medium (recurring deliberate efforts without a central identity), low (only incidental one-off mentions), none visible (nothing after genuinely checking About/mission/counselor pages). One line of reasoning. NEVER justify a rating with "no named program found"; programs are optional packaging, effort is the measure.
 GRADE LEVEL: elementary, middle, or unclear, with evidence.
 SOCIAL LINKS: social platform page URLs only.
 SOURCES: every source actually read: title, URL, deep read or not.
@@ -244,7 +244,7 @@ Return ONLY valid JSON (no markdown fences, no preamble) with this exact structu
     "ps_lines": ["2-3 ready-to-use P.S. lines, each 15-30 words, each starting with 'P.S.', ready to paste"]
   },
   "dashboard": {
-    "character_ed_importance": "high | medium | low | none_visible, from the dossier's CHARACTER EDUCATION judgment",
+    "character_ed_importance": "high | medium | low | none_visible, from the dossier's CHARACTER EDUCATION judgment (judged by visible EFFORT, homegrown efforts count fully; never lowered for lacking a named program)",
     "character_ed_basis": "One short line: the named program or evidence behind the rating, or 'nothing visible publicly'",
     "fundraisers_per_year": 0,
     "fundraisers_counted": ["short label for each distinct fundraiser counted in the most recent complete year, e.g. 'Fun Run (fall)', 'Book Fair (spring)'"],
