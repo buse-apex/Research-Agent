@@ -23,7 +23,17 @@ function StatusChip({ status }: { status: string }) {
   return <span className={cls}>{label}</span>;
 }
 
+interface Dashboard {
+  character_ed_importance?: string;
+  character_ed_basis?: string;
+  fundraisers_per_year?: number;
+  fundraisers_counted?: string[];
+  things_funded?: number;
+  things_funded_list?: string[];
+}
+
 interface BriefData {
+  dashboard?: Dashboard;
   fact_strip?: {
     grade_span?: string;
     enrollment?: string;
@@ -162,6 +172,11 @@ export function BriefRenderer({
   ${fs.current_fundraiser ? `<span>Current: <b>${htmlEscape(fs.current_fundraiser)}</b></span>` : ""}
   ${fs.decision_path ? `<span>Decision path: <b>${htmlEscape(fs.decision_path)}</b></span>` : ""}
 </div>
+${data.dashboard ? `<div class="dash-strip" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px;">
+  <div style="background:#fff;border:1px solid #E4E7EC;border-radius:10px;padding:14px 16px;"><div style="font-size:22px;font-weight:700;color:#16324F;text-transform:capitalize;">${htmlEscape((data.dashboard.character_ed_importance || "unknown").replace("_", " "))}</div><div style="font-size:12px;color:#6B7A90;font-weight:600;">Character education emphasis</div>${data.dashboard.character_ed_basis ? `<div style="font-size:11.5px;color:#8A97A8;margin-top:6px;">${htmlEscape(data.dashboard.character_ed_basis)}</div>` : ""}</div>
+  <div style="background:#fff;border:1px solid #E4E7EC;border-radius:10px;padding:14px 16px;"><div style="font-size:22px;font-weight:700;color:#16324F;">${data.dashboard.fundraisers_per_year ?? 0}</div><div style="font-size:12px;color:#6B7A90;font-weight:600;">Fundraisers per year</div>${(data.dashboard.fundraisers_counted || []).length ? `<div style="font-size:11.5px;color:#8A97A8;margin-top:6px;">${htmlEscape((data.dashboard.fundraisers_counted || []).join(" · "))}</div>` : ""}</div>
+  <div style="background:#fff;border:1px solid #E4E7EC;border-radius:10px;padding:14px 16px;"><div style="font-size:22px;font-weight:700;color:#16324F;">${data.dashboard.things_funded ?? 0}</div><div style="font-size:12px;color:#6B7A90;font-weight:600;">Things their money funds</div>${(data.dashboard.things_funded_list || []).length ? `<div style="font-size:11.5px;color:#8A97A8;margin-top:6px;">${htmlEscape((data.dashboard.things_funded_list || []).join(" · "))}</div>` : ""}</div>
+</div>` : ""}
 
 <h2>1 · The Read</h2>
 <p>${htmlEscape(data.the_read || "")}</p>
@@ -269,6 +284,30 @@ ${(data.sources || [])
             </span>
           )}
         </div>
+      )}
+
+      {data.dashboard && (
+        <div className="dash-strip">
+            <div className="dash-card">
+              <div className="dash-value">{escape((data.dashboard.character_ed_importance || "unknown").replace("_", " "))}</div>
+              <div className="dash-label">Character education emphasis</div>
+              {data.dashboard.character_ed_basis && <div className="dash-basis">{escape(data.dashboard.character_ed_basis)}</div>}
+            </div>
+            <div className="dash-card">
+              <div className="dash-value">{data.dashboard.fundraisers_per_year ?? 0}</div>
+              <div className="dash-label">Fundraisers per year</div>
+              {!!(data.dashboard.fundraisers_counted || []).length && (
+                <div className="dash-basis">{escape((data.dashboard.fundraisers_counted || []).join(" · "))}</div>
+              )}
+            </div>
+            <div className="dash-card">
+              <div className="dash-value">{data.dashboard.things_funded ?? 0}</div>
+              <div className="dash-label">Things their money funds</div>
+              {!!(data.dashboard.things_funded_list || []).length && (
+                <div className="dash-basis">{escape((data.dashboard.things_funded_list || []).join(" · "))}</div>
+              )}
+            </div>
+          </div>
       )}
 
       {/* 1 · THE READ */}

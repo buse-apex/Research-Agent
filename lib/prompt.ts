@@ -86,6 +86,7 @@ Resolve exactly which school this is: official name, street address, district, g
 6. WHAT ARE THEIR OWN WORDS? Mottos, values language, mascot, community nicknames, verbatim.
 7. WHEN DO THEY FUNDRAISE AND MEET? Fundraising season, PTA meeting schedule, upcoming calendar items.
 8. WHERE DO THEY ANNOUNCE THINGS? Their social pages and news/live-feed sections, as links.
+9. HOW MUCH DOES THIS SCHOOL CARE ABOUT CHARACTER EDUCATION? Look for named programs (Leader in Me, PBIS, The Positivity Project, Character Counts, Capturing Kids' Hearts, Second Step, house systems), values language in their motto or mission, character awards, kindness clubs, service learning, student leadership programs. Report WHAT they do, HOW PROMINENT it is (front page of their site vs a buried mention), and their verbatim language about it. This decides whether Apex's leadership curriculum is a lead angle for this school or a footnote.
 
 === HOW TO HUNT ===
 - For each question: search, read the best results, and FOLLOW THE TRAIL until the question is answered or the public record is genuinely exhausted. Do not stop at the first page of results.
@@ -107,6 +108,7 @@ NAMED PEOPLE: every named person, one per line, "Name : Role : tenure note".
 RECENT MOMENTS: dated, this school year first.
 THEIR WORDS: verbatim phrases.
 CALENDAR AND TIMING.
+CHARACTER EDUCATION: named programs and evidence, their verbatim language, and an emphasis judgment: high (named program or front-page values identity), medium (values language and some activities), low (scattered mentions), or none visible. One line of reasoning.
 GRADE LEVEL: elementary, middle, or unclear, with evidence.
 SOCIAL LINKS: social platform page URLs only.
 SOURCES: every source actually read: title, URL, deep read or not.
@@ -195,6 +197,10 @@ RULES:
 - NEVER: all caps, emojis, a dollar amount, fake urgency ("act now"), or vendor-blast phrasing ("Fundraising Opportunity for [School]").
 - No em dashes.
 
+=== DASHBOARD RULES ===
+- fundraisers_per_year = the count of DISTINCT fundraisers evidenced for the most recent complete school year (count each recurring event once). things_funded = the count of distinct uses of fundraising money evidenced in the dossier. Both counts come ONLY from dossier evidence; when nothing is evidenced, use 0 and let the lists be empty. Never invent entries to make the numbers look better.
+- character_ed_importance drives the angle: HIGH means this school already invests in character education, so Apex's leadership curriculum is a differentiator worth naming in the angle (the fitness event teaches leadership lessons all week). LOW or NONE means lead with ease and money and leave character education out of the pitch.
+
 Return ONLY valid JSON (no markdown fences, no preamble) with this exact structure:
 
 {
@@ -236,6 +242,14 @@ Return ONLY valid JSON (no markdown fences, no preamble) with this exact structu
     "subject_lines": [{"text": "A short email subject line, max 45 characters, warm and specific", "status": "confirmed|single_source|needs_verification", "source": "URL or empty string"}],
     "opener_lines": ["3-4 ready-to-use opener lines, each 15-25 words, each using ONE verified detail, complete sentences ready to paste"],
     "ps_lines": ["2-3 ready-to-use P.S. lines, each 15-30 words, each starting with 'P.S.', ready to paste"]
+  },
+  "dashboard": {
+    "character_ed_importance": "high | medium | low | none_visible, from the dossier's CHARACTER EDUCATION judgment",
+    "character_ed_basis": "One short line: the named program or evidence behind the rating, or 'nothing visible publicly'",
+    "fundraisers_per_year": 0,
+    "fundraisers_counted": ["short label for each distinct fundraiser counted in the most recent complete year, e.g. 'Fun Run (fall)', 'Book Fair (spring)'"],
+    "things_funded": 0,
+    "things_funded_list": ["short label for each distinct thing their fundraising money buys, e.g. 'K-5 field trips', 'teacher technology'"]
   },
   "social_dive": "One plain sentence for the franchisee: whether the Facebook deep dive ran, which page was scraped and how many posts, or exactly why it did not run. If no SOCIAL DIVE STATUS appears in the dossier, write: not requested this run.",
   "verification_summary": "One sentence on what the verification pass added or corrected.",
