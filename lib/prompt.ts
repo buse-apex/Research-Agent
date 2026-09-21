@@ -108,7 +108,7 @@ NAMED PEOPLE: every named person, one per line, "Name : Role : tenure note".
 RECENT MOMENTS: dated, this school year first.
 THEIR WORDS: verbatim phrases.
 CALENDAR AND TIMING.
-CHARACTER EDUCATION: every effort found (homegrown or named), their verbatim language, and an emphasis judgment BY EFFORT: high (a visible values identity or an ongoing dedicated effort the school clearly invests in, like a values page, series, or recurring tradition featured on their site), medium (recurring deliberate efforts without a central identity), low (only incidental one-off mentions), none visible (nothing after genuinely checking About/mission/counselor pages). One line of reasoning. NEVER justify a rating with "no named program found"; programs are optional packaging, effort is the measure.
+CHARACTER EDUCATION: every effort found (homegrown or named), their verbatim language, and an emphasis judgment BY ACTION: high (the school visibly RUNS character-themed events or activities: character assemblies, kindness weeks, trait-of-the-month activities, character award ceremonies, service learning projects, active leadership clubs or buddy programs; recurring or this-school-year evidence), medium (a values IDENTITY without event evidence: mascot-branded values, a values page, motto system, podcast or spotlight series, or deliberate efforts that are talk rather than events), low (only incidental one-off mentions), none visible (nothing after genuinely checking About/mission/counselor pages). Identity alone never rates high; events actually run are what high means. One line of reasoning. NEVER justify a rating with "no named program found"; programs are optional packaging, action is the measure.
 GRADE LEVEL: elementary, middle, or unclear, with evidence.
 SOCIAL LINKS: social platform page URLs only.
 SOURCES: every source actually read: title, URL, deep read or not.
@@ -199,7 +199,7 @@ RULES:
 
 === DASHBOARD RULES ===
 - fundraisers_per_year = the count of DISTINCT fundraisers evidenced for the most recent complete school year (count each recurring event once). things_funded = the count of distinct uses of fundraising money evidenced in the dossier. Both counts come ONLY from dossier evidence; when nothing is evidenced, use 0 and let the lists be empty. Never invent entries to make the numbers look better.
-- character_ed_importance drives the angle: HIGH means this school already invests in character education, so Apex's leadership curriculum is a differentiator worth naming in the angle (the fitness event teaches leadership lessons all week). LOW or NONE means lead with ease and money and leave character education out of the pitch.
+- character_ed_importance drives the angle: HIGH means this school already RUNS character-themed events, so Apex's leadership curriculum is a differentiator worth naming in the angle (the fitness event teaches leadership lessons all week, and it fits what they already do). MEDIUM means they have a values identity but no events; the angle may echo their values language without making character the lead. LOW or NONE means lead with ease and money and leave character education out of the pitch.
 
 Return ONLY valid JSON (no markdown fences, no preamble) with this exact structure:
 
@@ -244,7 +244,7 @@ Return ONLY valid JSON (no markdown fences, no preamble) with this exact structu
     "ps_lines": ["2-3 ready-to-use P.S. lines, each 15-30 words, each starting with 'P.S.', ready to paste"]
   },
   "dashboard": {
-    "character_ed_importance": "high | medium | low | none_visible, from the dossier's CHARACTER EDUCATION judgment (judged by visible EFFORT, homegrown efforts count fully; never lowered for lacking a named program)",
+    "character_ed_importance": "high | medium | low | none_visible, from the dossier's CHARACTER EDUCATION judgment (high = character-themed events actually run; a values identity alone is medium; never lowered for lacking a named program)",
     "character_ed_basis": "One short line: the named program or evidence behind the rating, or 'nothing visible publicly'",
     "fundraisers_per_year": 0,
     "fundraisers_counted": ["short label for each distinct fundraiser counted in the most recent complete year, e.g. 'Fun Run (fall)', 'Book Fair (spring)'"],
