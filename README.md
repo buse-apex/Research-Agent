@@ -1,107 +1,162 @@
-# Apex School Research Agent
+# The Apex Brief — School Research Agent
 
-Version 3.9.0. An upgrade to the supplied v38 application.
+A Next.js app for Apex franchisees: takes a school name + location, researches the school via web search, and returns a structured brief with personalization hooks, fundraising signals, and 3 ready-to-send email drafts.
 
-The agent helps an owner decide what to ask a school and which message may fit. It researches school and parent organization sources, produces dated evidence, develops needs and JTBD hypotheses, and drafts outreach when the evidence and relationship support it. It does not assign permanent personas or diagnose personality.
+## Stack
 
-## Start here
+- **Next.js 14** (App Router, TypeScript)
+- **NextAuth** with Google OAuth, restricted to your Apex Google Workspace domain
+- **Vercel Postgres** for tracking research requests and history
+- **Anthropic API** with `web_search` tool for the research itself
+- Deployed on **Vercel**
 
-1. Open `examples/sample-brief.html` for a fictional example of the new brief. It illustrates the format, not a live research result.
-2. Read `docs/RESEARCH_METHOD.md` for how signals become questions and message choices.
-3. Follow setup below. Your existing Google sign-in and database can be reused.
-4. Run a live pilot using `docs/EVALUATION.md` before a broad franchisee rollout.
+## Features
 
-## What changed
+- `/` — Research a school (gated by login)
+- `/history` — Your past briefs
+- `/brief/[id]` — View any past brief
+- `/admin` — Usage stats and recent requests (admin emails only)
 
-- Follows school and PTO links to officers, committees, budgets, minutes, newsletters and fundraiser history.
-- Reads HTML and text PDFs; retains source URLs, retrieval status, dates and quotations. Search snippets never count as full page reads.
-- Separates historical events, current plans and undated listings. School organization finances, PTO finances and event results have separate labels.
-- Develops needs hypotheses with evidence, counterevidence, another explanation, a discovery question, message direction and proof to bring.
-- Adds owner inputs for relationship, elementary/middle audience and local knowledge. Apex history and unclear scope can hold outreach for clarification.
-- Separately reviews factual interpretations and outreach. A quotation match is labeled differently from a reviewed claim.
-- Fixes Facebook profile ID links, searches full post text for signals before truncation, and retains relevant prior spring posts when returned by the provider.
-- Shows gaps and failed or skipped checks. Exports a complete HTML brief.
-- Keeps legacy briefs readable. No manual migration is needed for the new JSON format.
+---
 
-## Setup
+## Setup — Step by Step
 
-Use Node.js 20.19 or newer with npm. Keep the extracted project folder together.
+### 1. Clone and install
 
 ```bash
-npm ci
+git clone <your-repo>
+cd apex-research-agent
+npm install
+```
+
+### 2. Create a Google OAuth app
+
+1. Go to https://console.cloud.google.com/apis/credentials
+2. Create a new project (or use an existing one) → **OAuth 2.0 Client ID** → **Web application**
+3. Add authorized redirect URIs:
+   - `http://localhost:3000/api/auth/callback/google` (for local dev)
+   - `https://YOUR-VERCEL-DOMAIN.vercel.app/api/auth/callback/google` (for production — add after deploy)
+4. Copy the **Client ID** and **Client Secret**
+
+### 3. Set up environment variables
+
+Copy `.env.example` to `.env.local`:
+
+```bash
 cp .env.example .env.local
 ```
 
-Set these server variables in `.env.local`:
+Fill in:
 
-| Variable | Purpose |
-| --- | --- |
-| `ANTHROPIC_API_KEY` | Required for research, review and drafting |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Existing Google OAuth app |
-| `NEXTAUTH_SECRET` | Session secret; generate with `openssl rand -base64 32` |
-| `NEXTAUTH_URL` | `http://localhost:3000` locally; deployed URL in production |
-| `ALLOWED_EMAILS` and/or `ALLOWED_DOMAIN` | Comma-separated emails and/or one domain; without either, sign-in is denied |
-| `ADMIN_EMAILS` | Optional comma-separated administrators |
-| `POSTGRES_URL` and provider-specific `POSTGRES_*` values | Saved history and admin reporting |
-| `SERPER_API_KEY` | Optional Google discovery; otherwise uses Anthropic web search |
-| `APIFY_TOKEN` | Optional public Facebook reading when selected |
-| `RESEARCH_MODEL`, `VERIFY_MODEL` | Optional model overrides supported by your account |
+- `NEXTAUTH_SECRET` — generate with `openssl rand -base64 32`
+- `NEXTAUTH_URL` — `http://localhost:3000` for local
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — from step 2
+- `ALLOWED_EMAIL_DOMAIN` — your Apex Google Workspace domain (e.g. `apexleadershipco.com`)
+- `ADMIN_EMAILS` — comma-separated admin emails (e.g. `buse@apexleadershipco.com,jamie@apexleadershipco.com`)
+- `ANTHROPIC_API_KEY` — from https://console.anthropic.com
 
-Remove unused placeholder values. A fake optional key causes a provider call and failure; leave unused variables blank.
+### 4. Set up Vercel Postgres
 
-Configure Google's authorized redirect URI as `http://localhost:3000/api/auth/callback/google` locally and `https://YOUR-HOST/api/auth/callback/google` in production. Keep the callback and `NEXTAUTH_URL` aligned.
+**Option A — Local dev with hosted DB (recommended):**
+
+1. Deploy a placeholder version to Vercel first (see step 5)
+2. In Vercel Dashboard → Storage → Create → Postgres
+3. Connect it to your project
+4. Vercel auto-injects the `POSTGRES_*` variables to production
+5. For local dev: copy the values from the Postgres dashboard → `.env.local` tab → paste into your local `.env.local`
+
+**Option B — Local Postgres:**
+
+Run Postgres locally and set `POSTGRES_URL` to your local connection string.
+
+### 5. Initialize the database schema
 
 ```bash
-npm test
-npm run typecheck
+npm install dotenv  # one-time, for the init script
+node scripts/init-db.js
+```
+
+This creates the `research_requests` table.
+
+### 6. Run locally
+
+```bash
 npm run dev
 ```
 
-Open `http://localhost:3000` and sign in with an allowed Google account.
+Open http://localhost:3000 — sign in with your Apex Google account.
 
-The existing `research_requests` table stores the new brief in `brief_data` and the internal evidence record in `dossier`. The app creates/adds required columns on first database use. The database user needs schema privileges. `npm run db:init` can initialize a new database and indexes. If saving fails, the brief appears with a download reminder but is not saved to history.
-
-PostHog is optional. Set its public project key and host only if used. Existing analytics behavior is retained.
-
-## Deploying the upgrade
-
-This package is source code, not an already deployed service. Replace your application's source in your normal repository/deployment workflow. Keep secrets in your hosting environment.
+### 7. Deploy to Vercel
 
 ```bash
-npm ci
-npm run build
-npm start
+# If you have the Vercel CLI:
+vercel
+
+# Or push to a GitHub repo and import in the Vercel Dashboard
 ```
 
-On Vercel, use the existing Next.js project and the environment variables above. The research route requests a **600-second function duration**, with a 540-second internal research budget. Check that your hosting plan and proxy support that duration; platform limits override the code. No particular plan, cost or quota is assumed. The separate quick meetings route has a 120-second duration.
+After deploying:
+1. Add all `.env.local` variables to Vercel → Project Settings → Environment Variables
+2. Update `NEXTAUTH_URL` to your production URL
+3. Update Google OAuth redirect URI (step 2) to include the production URL
+4. Connect Vercel Postgres (step 4) if you haven't yet
+5. Trigger a redeploy
 
-Keep the existing database. New and old brief formats use their corresponding renderers. Check a saved legacy brief in staging.
+---
 
-## Limits and operation
+## File Structure
 
-Runs are bounded: at most 28 direct page reads, two linked hops, 6 MB per document, selected passages for analysis, and optional Facebook research on at most two page URLs. No useful need or a held draft is a valid outcome.
+```
+apex-research-agent/
+├── app/
+│   ├── api/
+│   │   ├── auth/[...nextauth]/route.ts   # NextAuth handler
+│   │   ├── research/route.ts              # Anthropic call + DB log
+│   │   ├── history/route.ts               # User's own history
+│   │   └── admin/route.ts                 # Admin stats + all requests
+│   ├── admin/page.tsx                     # Admin dashboard
+│   ├── brief/[id]/page.tsx                # Single brief viewer
+│   ├── history/page.tsx                   # User's history list
+│   ├── signin/page.tsx                    # Google sign-in
+│   ├── page.tsx                           # Main research page
+│   ├── layout.tsx                         # Root layout
+│   ├── providers.tsx                      # SessionProvider wrapper
+│   └── globals.css                        # All styling
+├── components/
+│   ├── Masthead.tsx                       # Top nav
+│   └── BriefRenderer.tsx                  # Renders a brief
+├── lib/
+│   ├── auth.ts                            # NextAuth config + isAdmin helper
+│   ├── db.ts                              # Postgres queries
+│   └── prompt.ts                          # The Apex research prompt
+├── scripts/
+│   └── init-db.js                         # Creates the DB table
+├── .env.example
+├── next.config.js
+├── package.json
+└── tsconfig.json
+```
 
-The agent cannot access private groups, bypass blocked sites, OCR image-only PDFs, or guarantee a complete social archive. It does not access CRM. Relationship comes from the owner; public Apex history triggers a check. Owner notes are sent to the model and retained in the dossier when saving succeeds. Enter school business context appropriate for those services.
+---
 
-The quick PTA meeting check is a separate legacy workflow and does not inherit the full evidence-review pipeline. Confirm meeting details before attending. DISC and SOCIAL STYLE are not inferred from online profiles.
+## Updating the Apex Prompt
 
-Costs vary with source volume, models, search and social calls. Review actual provider usage in the pilot. This version does not calculate a per-run bill.
+The research prompt lives in `lib/prompt.ts`. Edit it there. Changes deploy automatically on next push.
 
-## Main files
+## Adding an Admin
 
-| File | Responsibility |
-| --- | --- |
-| `lib/research/discover.ts` | Search trails and source leads |
-| `lib/research/network.ts` | Public URL validation, pinned DNS, bounded requests |
-| `lib/research/reader.ts` | Linked pages, HTML/PDF extraction, passage selection |
-| `lib/research/social.ts` | Facebook collection and signal selection |
-| `lib/research/prompts.ts` | Evidence rules, JTBD/needs, Apex program scope |
-| `lib/research/validate.ts` | Receipts, dates, confidence and outreach gates |
-| `lib/research/pipeline.ts` | Research, reviews, failures and brief assembly |
-| `components/EvidenceBrief.tsx` | New brief and HTML export |
-| `components/BriefRenderer.tsx` | New/legacy routing |
-| `tests/` | Offline regression checks; no paid API calls |
+Add their email to `ADMIN_EMAILS` in Vercel → Project Settings → Environment Variables, comma-separated. Redeploy.
 
-## Validation status
+## Cost Notes
 
-Local regression tests, TypeScript checks and a production build passed. Tests use synthetic schools and mocked model/provider responses, plus actual text-PDF extraction. They do not establish live research accuracy or verify credentials, Google login, production database, paid providers or hosting. Use the pilot scorecard before rollout.
+- **NextAuth**: free
+- **Vercel Postgres**: free up to 256 MB and 60 hours compute/month (well within usage)
+- **Vercel hosting**: free Hobby tier covers this app
+- **Anthropic API**: each research call costs roughly $0.30 to $0.60 depending on how many web searches the agent runs. With a 100-franchisee network running 5 briefs/week, that's ~$120 to $240/month.
+
+## Security Notes
+
+- The Anthropic API key stays server-side in environment variables. Never exposed to the browser.
+- Sign-in is restricted to your Google Workspace domain by `ALLOWED_EMAIL_DOMAIN`.
+- Admin routes check `ADMIN_EMAILS` on the server.
+- Per-user brief access is enforced server-side: users can only fetch their own briefs (admins can fetch any).

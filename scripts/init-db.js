@@ -2,7 +2,7 @@
 // Requires POSTGRES_URL in .env.local (or environment)
 
 const { sql } = require("@vercel/postgres");
-require("@next/env").loadEnvConfig(process.cwd());
+require("dotenv").config({ path: ".env.local" });
 
 async function main() {
   console.log("Creating research_requests table…");
@@ -16,7 +16,6 @@ async function main() {
       school_location TEXT NOT NULL,
       franchisee_name TEXT,
       brief_data JSONB NOT NULL,
-      dossier TEXT,
       created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `;
