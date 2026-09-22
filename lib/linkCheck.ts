@@ -8,10 +8,23 @@
 // Bot-blocks (403), rate limits (429), server hiccups (5xx), and timeouts
 // keep the link, because those pages often work fine in a human browser.
 
+import { lookup } from "node:dns/promises";
+import { publicAddress } from "@/lib/research/network";
+
 const CHECK_TIMEOUT_MS = 6000;
 const MAX_LINKS = 40;
 
 async function checkOne(url: string): Promise<boolean /* dead */> {
+  // SSRF guard: only ever probe public http(s) addresses. Anything else is
+  // left unmarked (the link renders normally; we just do not fetch it).
+  try {
+    const u = new URL(url);
+    if (!/^https?:$/.test(u.protocol)) return false;
+    const { address } = await lookup(u.hostname);
+    if (!publicAddress(address)) return false;
+  } catch {
+    return false;
+  }
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), CHECK_TIMEOUT_MS);
   try {

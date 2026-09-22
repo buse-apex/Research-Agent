@@ -102,6 +102,9 @@ function normalizeFacebookUrl(u: string): string {
   // facebook.com/<ID> resolves directly to the same page and scrapes reliably.
   const m = u.match(/facebook\.com\/p\/[^/]*?-(\d{8,})\/?/i);
   if (m) return `https://www.facebook.com/${m[1]}`;
+  // profile.php?id= URLs: the id IS the page identity; never strip it as a query param.
+  const prof = u.match(/facebook\.com\/profile\.php\?[^#]*\bid=(\d+)/i);
+  if (prof) return `https://www.facebook.com/profile.php?id=${prof[1]}`;
   return u.split("?")[0];
 }
 
@@ -214,10 +217,13 @@ export async function scrapeFacebookPosts(pageUrl: string): Promise<SocialResult
 
     // Bucket 1: everything from the recent window (undated posts near the top
     // of the feed are treated as recent, feeds are reverse-chronological).
+    // Only posts with a PARSEABLE DATE inside the window count as recent;
+    // undated posts must not masquerade as "the school's life right now"
+    // (they remain eligible for the fundraiser-signal bucket below).
     const recentPosts = all
-      .filter((p, idx) => {
+      .filter((p) => {
         const t = postTime(p);
-        return t !== null ? t >= recentCutoff : idx < 10;
+        return t !== null && t >= recentCutoff;
       })
       .slice(0, KEEP_RECENT_MAX);
 

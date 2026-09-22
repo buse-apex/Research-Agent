@@ -1,3 +1,4 @@
+import { readPage } from "@/lib/research/reader";
 // Guaranteed fetching of franchisee-supplied URLs.
 // Each URL is fetched server-side, reduced to readable text, and returned so it
 // can be injected into the research prompt as must-read context. Every fetch is
@@ -64,33 +65,20 @@ function htmlToText(html: string): string {
 }
 
 async function fetchOne(url: string): Promise<FetchedPage> {
+  // Hardened read via lib/research/reader: validates the address is public
+  // (SSRF guard), enforces size/time limits, follows safe redirects, and
+  // extracts text from HTML AND PDFs (newsletters, budgets, flyers).
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), 20000);
   try {
-    const res = await fetch(url, {
-      signal: controller.signal,
-      redirect: "follow",
-      headers: {
-        // A normal-looking UA reduces trivial bot blocks; not a guarantee.
-        "User-Agent":
-          "Mozilla/5.0 (compatible; ApexResearchAgent/1.0; +https://apexleadershipco.com)",
-        Accept: "text/html,application/xhtml+xml",
-      },
-    });
-    if (!res.ok) {
-      return { url, ok: false, error: `HTTP ${res.status}` };
+    const page = await readPage(url, controller.signal);
+    if (page.status === "read" && page.text.trim()) {
+      const title = page.title && page.title !== url ? `${page.title}\n` : "";
+      return { url: page.url, ok: true, text: `${title}${page.text.slice(0, MAX_CHARS_PER_PAGE)}` };
     }
-    const ctype = res.headers.get("content-type") || "";
-    if (!/text\/html|text\/plain|application\/xhtml/i.test(ctype)) {
-      return { url, ok: false, error: `Unsupported content type (${ctype || "unknown"})` };
-    }
-    const raw = await res.text();
-    const text = htmlToText(raw).slice(0, MAX_CHARS_PER_PAGE);
-    if (!text) return { url, ok: false, error: "No readable text found" };
-    return { url, ok: true, text };
+    return { url, ok: false, error: page.reason || `could not read (${page.status})` };
   } catch (e: any) {
-    const msg = e?.name === "AbortError" ? "Timed out" : e?.message || "Fetch failed";
-    return { url, ok: false, error: msg };
+    return { url, ok: false, error: e?.message || "fetch failed" };
   } finally {
     clearTimeout(timer);
   }
