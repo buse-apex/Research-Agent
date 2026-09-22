@@ -199,6 +199,13 @@ RULES:
 - NEVER: all caps, emojis, a dollar amount, fake urgency ("act now"), or vendor-blast phrasing ("Fundraising Opportunity for [School]").
 - No em dashes.
 
+=== LIVING PROFILE RULES (this block feeds a printable worksheet the franchisee completes after discovery) ===
+- Every entry here is a HYPOTHESIS from public research; write it so a franchisee can confirm or disprove it in one conversation.
+- The five needs are: Reduce the workload (events depend on a few people, unfilled roles, canceled activities); Reach a funding goal (a named project, amount, or deadline; a shortfall); Make the cost worthwhile (fee, split, or comparison questions); Build participation and school connection (belonging, inclusion, families involved, an elementary buyer who independently values leadership learning); Protect staff time and the school day (schedule, disruption, teacher duties, campus access). Use exactly these names, or Unknown.
+- A signal is not confirmation. A routine volunteer request does NOT establish the workload need; it earns the question "which tasks were hard to staff?". Absence of visible fundraising establishes NOTHING about need; it earns a situation question. Never infer capacity, values, or motives from FRL, Title I, or affluence.
+- Proof asset by need: workload = who-handles-what responsibilities sheet; funding goal = comparable result with stated assumptions; cost = financial and workload comparison; participation = grade-appropriate program example; school day = program schedule and staff responsibilities.
+- Decision participants: list named people with roles from the dossier, then add the unnamed roles this school type usually involves (treasurer, principal, district or diocese approval) as "unknown" entries with the confirming question.
+
 === DASHBOARD RULES ===
 - fundraisers_per_year = the count of DISTINCT active fundraising campaigns or events evidenced in the TRAILING 12 MONTHS (count each recurring event once). Passive, always-on channels (DonorsChoose, Box Tops, grocery rewards, spirit wear stores) are NOT counted here; list them in the money trail instead. things_funded = the count of distinct uses of fundraising money evidenced in the dossier. Both counts come ONLY from dossier evidence; when nothing is evidenced, use 0 and let the lists be empty. Never invent entries to make the numbers look better.
 - character_ed_importance drives the angle: HIGH means this school already RUNS character-themed events, so Apex's leadership curriculum is a differentiator worth naming in the angle (the fitness event teaches leadership lessons all week, and it fits what they already do). MEDIUM means they have a values identity but no events; the angle may echo their values language without making character the lead. LOW or NONE means lead with ease and money and leave character education out of the pitch.
@@ -254,6 +261,18 @@ Return ONLY valid JSON (no markdown fences, no preamble) with this exact structu
     "things_funded_list": ["short label for each distinct thing their fundraising money buys, e.g. 'K-5 field trips', 'teacher technology'"]
   },
   "social_dive": "One plain sentence for the franchisee: whether the Facebook deep dive ran, which page was scraped and how many posts, or exactly why it did not run. If no SOCIAL DIVE STATUS appears in the dossier, write: not requested this run.",
+  "living_profile": {
+    "relationship_stage": "Current customer (public Apex page found) | Not confirmed publicly; franchisee to confirm",
+    "current_fundraiser": "same as the fact strip",
+    "program_fit": "Elementary program (K-5) | Middle school program (6-8) | Unclear from public grade data",
+    "school_context": "2-3 sentences of verified context, each fact with its source and date",
+    "primary_need": {"need": "Reduce the workload | Reach a funding goal | Make the cost worthwhile | Build participation and school connection | Protect staff time and the school day | Unknown", "signal": "the public observation behind this hypothesis", "confirming_question": "the one question that would confirm or disprove it", "possible_correction": "the customer answer that would change the need, and to what", "proof_asset": "the asset to bring if confirmed"},
+    "secondary_need": {"need": "same options or Unknown", "signal": "", "confirming_question": "", "possible_correction": "", "proof_asset": ""},
+    "decision_participants": [{"name": "named person or 'unknown'", "role": "", "likely_concern": "what this role usually weighs, framed as a question to confirm"}],
+    "contact_channels": "where this school actually announces things (their Facebook page, newsletter, ParentSquare, website feed), stated factually",
+    "recheck_triggers": ["each change signal found (new principal, board turnover, new vendor, new goal) as a reason to recheck the profile later"],
+    "remaining_questions": ["3-5 discovery questions the research could not answer"]
+  },
   "verification_summary": "One sentence on what the verification pass added or corrected.",
   "sources": [
     { "title": "Page or post title", "url": "https://...", "deep_read": true }

@@ -32,8 +32,25 @@ interface Dashboard {
   things_funded_list?: string[];
 }
 
+interface NeedHypothesis {
+  need?: string; signal?: string; confirming_question?: string; possible_correction?: string; proof_asset?: string;
+}
+interface LivingProfile {
+  relationship_stage?: string;
+  current_fundraiser?: string;
+  program_fit?: string;
+  school_context?: string;
+  primary_need?: NeedHypothesis;
+  secondary_need?: NeedHypothesis;
+  decision_participants?: { name?: string; role?: string; likely_concern?: string }[];
+  contact_channels?: string;
+  recheck_triggers?: string[];
+  remaining_questions?: string[];
+}
+
 interface BriefData {
   dashboard?: Dashboard;
+  living_profile?: LivingProfile;
   fact_strip?: {
     grade_span?: string;
     enrollment?: string;
@@ -241,6 +258,78 @@ ${(data.sources || [])
     URL.revokeObjectURL(url);
   };
 
+  // The playbook's "living school profile" worksheet, pre-filled with research
+  // hypotheses. Customer-confirmed fields are left blank on purpose.
+  const handleDownloadProfile = () => {
+    const lp = data.living_profile || {};
+    const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+    const blank = `<div class="blank"></div>`;
+    const need = (n?: NeedHypothesis) =>
+      n && n.need && n.need !== "Unknown"
+        ? `<b>${htmlEscape(n.need)}</b> <span class="tag">Hypothesis</span>
+<div class="sub"><b>Signal:</b> ${htmlEscape(n.signal || "")}</div>
+<div class="sub"><b>Confirm with:</b> ${htmlEscape(n.confirming_question || "")}</div>
+<div class="sub"><b>Possible correction:</b> ${htmlEscape(n.possible_correction || "")}</div>
+<div class="sub"><b>Proof asset if confirmed:</b> ${htmlEscape(n.proof_asset || "")}</div>`
+        : `Unknown <span class="tag">Hypothesis</span>${blank}`;
+    const row = (label: string, value: string, hint?: string) =>
+      `<div class="row"><div class="label">${label}${hint ? `<div class="hint">${hint}</div>` : ""}</div><div class="value">${value}</div></div>`;
+    const participants = (lp.decision_participants || [])
+      .map((p) => `<div class="sub">${htmlEscape(p.name || "unknown")}${p.role ? `, ${htmlEscape(p.role)}` : ""}${p.likely_concern ? ` <span class="muted">${htmlEscape(p.likely_concern)}</span>` : ""}</div>`)
+      .join("");
+    const list = (items?: string[]) => (items && items.length ? `<ul>${items.map((x) => `<li>${htmlEscape(x)}</li>`).join("")}</ul>` : "");
+
+    const sourcesHtml = (data.sources || [])
+      .slice(0, 12)
+      .map((sr) => `<div class="sub">${htmlEscape(sr.title)} <span class="muted">${htmlEscape(sr.url)}</span></div>`)
+      .join("");
+
+    const profileHtml = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Living School Profile: ${htmlEscape(schoolName)}</title>
+<style>
+  body { font-family: -apple-system, Segoe UI, Arial, sans-serif; color: #16324F; max-width: 860px; margin: 32px auto; padding: 0 24px; font-size: 13.5px; line-height: 1.5; }
+  h1 { font-size: 22px; margin: 0 0 4px; } .meta { color: #6B7A90; font-size: 12px; margin-bottom: 18px; }
+  .note { background: #FFF7ED; border: 1px solid #FED7AA; border-radius: 8px; padding: 10px 14px; font-size: 12.5px; margin-bottom: 20px; }
+  .row { display: grid; grid-template-columns: 220px 1fr; gap: 14px; padding: 12px 0; border-bottom: 1px solid #E4E7EC; page-break-inside: avoid; }
+  .label { font-weight: 700; font-size: 12.5px; } .hint { font-weight: 400; color: #8A97A8; font-size: 11.5px; margin-top: 2px; }
+  .value { min-height: 22px; } .sub { margin-top: 5px; font-size: 12.5px; } .muted { color: #6B7A90; }
+  .blank { border-bottom: 1px solid #9AA6B8; height: 22px; margin: 6px 0; } .blank + .blank { margin-top: 10px; }
+  .tag { display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #8A6116; background: #FDF6E7; border: 1px solid #F0E1B8; border-radius: 999px; padding: 1px 8px; margin-left: 6px; vertical-align: middle; }
+  .tag.confirmed { color: #1E5E3A; background: #E6F4EC; border-color: #BFE3CC; }
+  .states span { display: inline-block; margin-right: 18px; } .box { display: inline-block; width: 12px; height: 12px; border: 1.5px solid #16324F; border-radius: 2px; vertical-align: -2px; margin-right: 6px; }
+  ul { margin: 6px 0 0 18px; padding: 0; } li { margin: 2px 0; }
+  @media print { body { margin: 0; } .note { border-color: #ccc; } }
+</style></head><body>
+<h1>The living school profile</h1>
+<div class="meta">${htmlEscape(schoolName)} · ${htmlEscape(location)} · Prepared ${today}${franchiseeName ? ` for ${htmlEscape(franchiseeName)}` : ""}</div>
+<div class="note">Entries marked <span class="tag">Hypothesis</span> come from public research and still need the customer's confirmation. Blank fields are yours to complete after discovery. Leave unknowns visible.</div>
+
+${row("School / territory", `${htmlEscape(schoolName)}, ${htmlEscape(location)}${franchiseeName ? ` · ${htmlEscape(franchiseeName)}` : ""}`)}
+${row("Record owner / updated on", `${franchiseeName ? htmlEscape(franchiseeName) : ""} · ${today}`)}
+${row("Relationship stage / current fundraiser / program fit", `<div class="sub"><b>Stage:</b> ${htmlEscape(lp.relationship_stage || "Not confirmed publicly; franchisee to confirm")}</div><div class="sub"><b>Current fundraiser:</b> ${htmlEscape(lp.current_fundraiser || fs.current_fundraiser || "none visible")} <span class="tag">Hypothesis</span></div><div class="sub"><b>Program fit:</b> ${htmlEscape(lp.program_fit || "")}</div>`)}
+${row("School context and verified sources, with dates", `${htmlEscape(lp.school_context || data.the_read || "")}${sourcesHtml}`)}
+${row("Primary need", need(lp.primary_need), "One of the five needs, or Unknown")}
+${row("Optional secondary need", need(lp.secondary_need))}
+${row("Evidence state", `<div class="states"><span><span class="box"></span>Hypothesis <span class="muted">(all research entries start here)</span></span><span><span class="box"></span>Customer-confirmed</span><span><span class="box"></span>Needs rechecking</span></div>`)}
+${row("What the customer actually said / contact / date", blank + blank, "Their words, not yours")}
+${row("The job", `When ${blank} help us ${blank} so we can ${blank}`, "When ___, help us ___, so we can ___")}
+${row("Success measure / timing / non-negotiable requirements", blank + blank)}
+${row("Decision participants, each person's concern, and who approves", `${participants || ""}${blank}`, "Named people are from public sources; confirm who recommends, approves, and signs")}
+${row("Contact preferences: format, detail, channel and timing", `<div class="sub"><b>Where they announce things:</b> ${htmlEscape(lp.contact_channels || "")}</div>${blank}`, "Record what you observe per contact; do not guess personalities")}
+${row("Chosen message / proof asset / remaining questions", `${list(lp.remaining_questions)}${blank}`)}
+${row("Next step / owner / agreed date / reason to recheck", `${(lp.recheck_triggers || []).length ? `<div class="sub"><b>Reasons to recheck later:</b></div>${list(lp.recheck_triggers)}` : ""}${blank}`)}
+</body></html>`;
+
+    const blob = new Blob([profileHtml], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `living-profile-${schoolName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.html`;
+    a.click();
+    track("living_profile_downloaded", { school_name: schoolName });
+    URL.revokeObjectURL(url);
+  };
+
   const fs = data.fact_strip || {};
   const bank = data.personalization_bank;
 
@@ -261,6 +350,9 @@ ${(data.sources || [])
         </div>
         <button className="btn btn-download" onClick={handleDownload}>
           Download Brief
+        </button>
+        <button className="btn btn-download" onClick={handleDownloadProfile} title="The playbook worksheet, pre-filled with research hypotheses">
+          Download Living Profile
         </button>
       </div>
 
