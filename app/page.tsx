@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Masthead } from "@/components/Masthead";
@@ -8,12 +8,11 @@ import { track } from "./providers";
 import { BriefRenderer } from "@/components/BriefRenderer";
 
 const STEPS = [
-  "Finding the school's Facebook and reading supplied pages",
-  "Searching the web for the school",
-  "Reading the school's website, live feed, and PTA pages",
-  "Hunting vendor history and fundraiser signals",
-  "Independent verification pass: re-checking key claims",
-  "Writing emails and building the personalization bank",
+  "Finding school and parent-organization sources",
+  "Following links to officers, budgets and event history",
+  "Reading evidence and separating dates",
+  "Developing need hypotheses and checking alternatives",
+  "Reviewing claims and preparing relevant outreach",
 ];
 
 export default function HomePage() {
@@ -24,6 +23,9 @@ export default function HomePage() {
   const [franchiseeName, setFranchiseeName] = useState("");
   const [extraUrls, setExtraUrls] = useState("");
   const [includeSocial, setIncludeSocial] = useState(false);
+  const [relationship, setRelationship] = useState("unknown");
+  const [gradeScope, setGradeScope] = useState("unknown");
+  const [ownerNotes, setOwnerNotes] = useState("");
 
   // Persist form inputs across reloads/deploys so testers and franchisees
   // don't lose their setup every time the page refreshes.
@@ -36,6 +38,9 @@ export default function HomePage() {
         if (f.location) setLocation(f.location);
         if (f.franchiseeName) setFranchiseeName(f.franchiseeName);
         if (f.extraUrls) setExtraUrls(f.extraUrls);
+        if (["unknown","prospect","current","former"].includes(f.relationship)) setRelationship(f.relationship);
+        if (["unknown","elementary","middle","mixed","high"].includes(f.gradeScope)) setGradeScope(f.gradeScope);
+        if (f.ownerNotes) setOwnerNotes(f.ownerNotes);
         if (typeof f.includeSocial === "boolean") setIncludeSocial(f.includeSocial);
       }
     } catch { /* never break the form over storage */ }
@@ -46,18 +51,16 @@ export default function HomePage() {
     try {
       sessionStorage.setItem(
         "apex_research_form",
-        JSON.stringify({ schoolName, location, franchiseeName, extraUrls, includeSocial })
+        JSON.stringify({ schoolName, location, franchiseeName, extraUrls, includeSocial, relationship, gradeScope, ownerNotes })
       );
     } catch { /* ignore */ }
-  }, [schoolName, location, franchiseeName, extraUrls, includeSocial]);
+  }, [schoolName, location, franchiseeName, extraUrls, includeSocial, relationship, gradeScope, ownerNotes]);
   const [meetingsData, setMeetingsData] = useState<any | null>(null);
   const [meetingsLoading, setMeetingsLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [briefData, setBriefData] = useState<any>(null);
   const [briefInputs, setBriefInputs] = useState<{ schoolName: string; location: string; franchiseeName: string } | null>(null);
-  const [stepIndex, setStepIndex] = useState(0);
-  const stepIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [adminEmails, setAdminEmails] = useState<string[]>([]);
 
   useEffect(() => {
@@ -99,11 +102,6 @@ export default function HomePage() {
 
     setLoading(true);
     setBriefData(null);
-    setStepIndex(0);
-
-    stepIntervalRef.current = setInterval(() => {
-      setStepIndex(prev => Math.min(prev + 1, STEPS.length - 1));
-    }, 40000);
 
     track("research_started", {
       school_name: schoolName.trim(),
@@ -120,7 +118,7 @@ export default function HomePage() {
           location: location.trim(),
           franchiseeName: franchiseeName.trim(),
           extraUrls: extraUrls.trim(),
-          includeSocial,
+          includeSocial, relationship, gradeScope, ownerNotes,
         }),
       });
 
@@ -139,7 +137,7 @@ export default function HomePage() {
       track("research_completed", {
         school_name: schoolName.trim(),
         location: location.trim(),
-        grade_span: data?.fact_strip?.grade_span || "",
+        grade_span: data?.school_identity?.grade_span || data?.fact_strip?.grade_span || "",
       });
     } catch (err: any) {
       track("research_failed", {
@@ -149,11 +147,6 @@ export default function HomePage() {
       });
       setError(`Something went sideways: ${err.message}. Try again.`);
     } finally {
-      if (stepIntervalRef.current) {
-        clearInterval(stepIntervalRef.current);
-        stepIntervalRef.current = null;
-      }
-      setStepIndex(STEPS.length);
       setLoading(false);
     }
   };
@@ -190,6 +183,7 @@ export default function HomePage() {
   };
 
   const handleClear = () => {
+    setRelationship("unknown"); setGradeScope("unknown"); setOwnerNotes("");
     try { sessionStorage.removeItem("apex_research_form"); } catch { /* ignore */ }
     setSchoolName("");
     setLocation("");
@@ -264,6 +258,13 @@ export default function HomePage() {
           </div>
         </div>
 
+        <div className="field-row">
+          <div><label className="label" htmlFor="relationship">Apex relationship</label><select id="relationship" className="field" value={relationship} onChange={e=>setRelationship(e.target.value)} disabled={loading}><option value="unknown">Not sure</option><option value="prospect">Prospect</option><option value="current">Current customer</option><option value="former">Former customer</option></select></div>
+          <div><label className="label" htmlFor="gradeScope">Grades you want to serve</label><select id="gradeScope" className="field" value={gradeScope} onChange={e=>setGradeScope(e.target.value)} disabled={loading}><option value="unknown">Research this</option><option value="elementary">Elementary</option><option value="middle">Middle school</option><option value="mixed">Mixed grades</option><option value="high">High school</option></select></div>
+        </div>
+        <label className="label" htmlFor="ownerNotes">What you already know (optional)</label>
+        <textarea id="ownerNotes" className="field" value={ownerNotes} onChange={e=>setOwnerNotes(e.target.value)} maxLength={3000} rows={3} disabled={loading} placeholder="Previous contact, a known goal, timing, or something to confirm" />
+        <p className="helper">Your notes stay separate from public evidence. They help the agent choose the right questions.</p>
         <span className="label">Specific pages to include (optional)</span>
         <div className="field-row single">
           <div>
@@ -294,7 +295,7 @@ export default function HomePage() {
             <span style={{ fontSize: 14 }}>
               <b>Social media deep dive.</b>{" "}
               <span style={{ color: "var(--ink-soft)" }}>
-                Finds and reads the school&apos;s or PTA&apos;s Facebook posts for the freshest news and fundraiser details. Runs alongside the research, so it adds little or no extra time.
+                Checks up to two public school or parent-organization Facebook pages for current and historical signals. Availability varies and this can add time.
               </span>
             </span>
           </label>
@@ -312,7 +313,7 @@ export default function HomePage() {
           </button>
         </div>
         <div className="helper" style={{ marginTop: 10 }}>
-          Deep research typically takes 4 to 6 minutes. It verifies its own work, so the brief is worth the wait.
+          Research can take several minutes. The brief shows which sources were read, what remains uncertain, and any skipped checks.
         </div>
 
         {loading && (
@@ -320,16 +321,10 @@ export default function HomePage() {
             <div className="pulse"></div>
             <div style={{ flex: 1 }}>
               <div className="loading-text">
-                {stepIndex < STEPS.length ? STEPS[stepIndex] : "Finalizing…"}
+                Research in progress
               </div>
               <div className="step-trail">
-                {STEPS.map((s, i) => {
-                  let cls = "step";
-                  if (i < stepIndex) cls += " done";
-                  else if (i === stepIndex) cls += " active";
-                  const marker = i < stepIndex ? "✓" : (i === stepIndex ? "→" : "·");
-                  return <div key={i} className={cls}>{marker}  {s}</div>;
-                })}
+                {STEPS.map((s, i) => <div key={i} className="step">· {s}</div>)}
               </div>
             </div>
           </div>
@@ -400,7 +395,7 @@ export default function HomePage() {
       )}
 
       <p className="footnote">
-        Researched, verified, and ready to send. <span className="accent">Apex Leadership Co.</span>
+        Evidence to prepare a better conversation. <span className="accent">Apex Leadership Co.</span>
       </p>
     </div>
   );

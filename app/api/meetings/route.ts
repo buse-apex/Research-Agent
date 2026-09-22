@@ -9,7 +9,7 @@ import { extractJson, sanitizeJson, tryParse } from "@/lib/json";
 export const maxDuration = 120;
 export const dynamic = "force-dynamic";
 
-const MODEL = "claude-sonnet-5";
+const MODEL = process.env.RESEARCH_MODEL || "claude-sonnet-5";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);

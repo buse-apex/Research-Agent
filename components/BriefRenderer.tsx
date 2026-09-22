@@ -1,5 +1,8 @@
 "use client";
 
+import { EvidenceBrief } from "./EvidenceBrief";
+import type { BriefV2 } from "@/lib/research/types";
+
 import { track } from "../app/providers";
 
 type BankItem = string | { text: string; status?: string; source?: string };
@@ -83,11 +86,17 @@ export function BriefRenderer({
   location,
   franchiseeName,
 }: {
-  data: BriefData;
+  data: BriefData | BriefV2;
   schoolName: string;
   location: string;
   franchiseeName: string;
 }) {
+  if ("schema_version" in data && data.schema_version === 2) return <EvidenceBrief data={data} schoolName={schoolName} location={location} franchiseeName={franchiseeName} />;
+  const legacy = data as BriefData;
+  return <LegacyBriefRenderer data={legacy} schoolName={schoolName} location={location} franchiseeName={franchiseeName} />;
+}
+
+function LegacyBriefRenderer({data,schoolName,location,franchiseeName}:{data:BriefData;schoolName:string;location:string;franchiseeName:string}) {
   const copyEmail = (email: { subject: string; body: string }, btnId: string) => {
     navigator.clipboard.writeText(
       `Subject: ${escape(email.subject)}\n\n${escape(email.body)}`
