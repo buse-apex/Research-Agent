@@ -183,18 +183,7 @@ ${data.dashboard ? `<div class="dash-strip" style="display:grid;grid-template-co
 ${data.pull_quote?.text ? `<div class="quote">"${htmlEscape(data.pull_quote.text)}"<div class="quote-attr">${htmlEscape(data.pull_quote.attribution || "")}</div></div>` : ""}
 ${data.angle ? `<div class="angle"><div class="angle-label">The Angle</div>${htmlEscape(data.angle)}</div>` : ""}
 
-<h2>2 · Ready-to-Send Drafts</h2>
-${(data.emails || [])
-  .map(
-    (e) => `<div class="email">
-<div class="email-type">${htmlEscape(e.type)}</div>
-<div class="email-subject">Subject: ${htmlEscape(e.subject)}</div>
-<div class="email-body">${htmlEscape(e.body)}</div>
-</div>`
-  )
-  .join("")}
-
-<h2>3 · Personalization Bank</h2>
+<h2>2 · Personalization Bank</h2>
 ${bank?.description ? `<p style="font-size:13px;color:#4A5568;">${htmlEscape(bank.description)}</p>` : ""}
 ${bankSection("Named People", bank?.named_people)}
 ${bankSection("Money Trail", bank?.money_trail)}
@@ -219,6 +208,17 @@ ${
         .join("")}`
     : ""
 }
+
+<h2>3 · Ready-to-Send Drafts</h2>
+${(data.emails || [])
+  .map(
+    (e) => `<div class="email">
+<div class="email-type">${htmlEscape(e.type)}</div>
+<div class="email-subject">Subject: ${htmlEscape(e.subject)}</div>
+<div class="email-body">${htmlEscape(e.body)}</div>
+</div>`
+  )
+  .join("")}
 
 <h2>4 · Sources</h2>
 ${data.verification_summary ? `<div class="verification"><b>Verified:</b> ${htmlEscape(data.verification_summary)}</div>` : ""}
@@ -334,40 +334,11 @@ ${(data.sources || [])
         </div>
       )}
 
-      {/* 2 · EMAILS */}
-      {data.emails && data.emails.length > 0 && (
-        <>
-          <div className="section-header">
-            <span className="section-num">2</span>
-            <h2 className="section-title">Ready-to-Send Drafts</h2>
-            <button className="report-btn" onClick={() => reportInaccuracy("Emails", schoolName)}>Report an inaccuracy</button>
-          </div>
-          {data.emails.map((email, i) => (
-            <div key={i} className="email-block">
-              <div className="email-header">
-                <span className="email-type">{escape(email.type)}</span>
-                <button
-                  id={`email-btn-${i}`}
-                  className="copy-btn"
-                  onClick={() => copyEmail(email, `email-btn-${i}`)}
-                >
-                  Copy Email
-                </button>
-              </div>
-              <div className="email-body">
-                <div className="subject-line">{escape(email.subject)}</div>
-                {escape(email.body)}
-              </div>
-            </div>
-          ))}
-        </>
-      )}
-
-      {/* 3 · PERSONALIZATION BANK */}
+      {/* 2 · PERSONALIZATION BANK */}
       {bank && (
         <>
           <div className="section-header">
-            <span className="section-num">3</span>
+            <span className="section-num">2</span>
             <h2 className="section-title">Personalization Bank</h2>
             <span className="section-subtitle">Every fact lives here, once</span>
             <button className="report-btn" onClick={() => reportInaccuracy("Personalization Bank", schoolName)}>Report an inaccuracy</button>
@@ -453,6 +424,35 @@ ${(data.sources || [])
               ))}
             </div>
           )}
+        </>
+      )}
+
+      {/* 3 · EMAILS */}
+      {data.emails && data.emails.length > 0 && (
+        <>
+          <div className="section-header">
+            <span className="section-num">3</span>
+            <h2 className="section-title">Ready-to-Send Drafts</h2>
+            <button className="report-btn" onClick={() => reportInaccuracy("Emails", schoolName)}>Report an inaccuracy</button>
+          </div>
+          {data.emails.map((email, i) => (
+            <div key={i} className="email-block">
+              <div className="email-header">
+                <span className="email-type">{escape(email.type)}</span>
+                <button
+                  id={`email-btn-${i}`}
+                  className="copy-btn"
+                  onClick={() => copyEmail(email, `email-btn-${i}`)}
+                >
+                  Copy Email
+                </button>
+              </div>
+              <div className="email-body">
+                <div className="subject-line">{escape(email.subject)}</div>
+                {escape(email.body)}
+              </div>
+            </div>
+          ))}
         </>
       )}
 

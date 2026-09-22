@@ -79,10 +79,10 @@ Resolve exactly which school this is: official name, street address, district, g
 
 === THE QUESTIONS (answer each, or prove the answer is not public) ===
 1. WHO RUNS FUNDRAISING HERE? Principal-led or a parent organization? Name the organization (PTA/PTO orgs are often named after the DISTRICT, not the school) and every current officer you can find.
-2. WHAT FUNDRAISING DO THEY RUN, AND WHO OPERATES IT? Every fundraiser you can find, year by year (back to ${oldestYear}): vendor-run events, DIY events, product sales, passive channels, online campaigns. For each: what it is, its year, and WHO OPERATES IT. If an event's operator is not named by a source, say "operator unconfirmed"; a parent group funding or promoting an event is NOT proof it operates the event.
+2. WHAT FUNDRAISING DO THEY RUN, AND WHO OPERATES IT? Every fundraiser you can find, year by year (back to ${oldestYear}): vendor-run events, DIY events, product sales, passive channels, online campaigns. For each: what it is, its year, and WHO OPERATES IT. EXCEPTION for VENDOR relationships specifically: look back up to 6 years, because a school that ever hired a fundraising vendor is a proven vendor buyer; always label an old relationship with its year and never present it as current. If an event's operator is not named by a source, say "operator unconfirmed"; a parent group funding or promoting an event is NOT proof it operates the event.
 3. WHERE DOES THE MONEY GO, AND HOW MUCH? What past fundraising bought, current goals, and any amounts with their years. A registered nonprofit's tax records often hold real revenue figures.
-4. WHO IS THE CURRENT PRINCIPAL? From the school's OWN website or a dated current-year source only. An old filing's name is not current; if that is all that exists, say so plainly.
-5. WHAT IS ALIVE AT THIS SCHOOL RIGHT NOW? Recent dated moments from this school year: events, awards, student achievements, news.
+4. WHO IS THE CURRENT PRINCIPAL? From the school's OWN website or a dated current-year source only. An old filing's name is not current; if that is all that exists, say so plainly. When sources CONFLICT on who the principal is, the newer DATED source wins, and the older name is reported as the predecessor, never as current. When the school's own staff directory cannot be read (some render only with JavaScript), say exactly that, and mark the principal needs_verification unless a dated current-year source settles it.
+5. WHAT IS ALIVE AT THIS SCHOOL RIGHT NOW? Recent dated moments from this school year: events and event recaps, awards, student achievements, news.
 6. WHAT ARE THEIR OWN WORDS? Mottos, values language, mascot, community nicknames, verbatim.
 7. WHEN DO THEY FUNDRAISE AND MEET? Fundraising season, PTA meeting schedule, upcoming calendar items.
 8. WHERE DO THEY ANNOUNCE THINGS? Their social pages and news/live-feed sections, as links.
@@ -92,6 +92,7 @@ Resolve exactly which school this is: official name, street address, district, g
 - For each question: search, read the best results, and FOLLOW THE TRAIL until the question is answered or the public record is genuinely exhausted. Do not stop at the first page of results.
 - Directory aggregators (US News, GreatSchools, Niche, and similar) answer none of these questions; look past them.
 - Recognize fundraising evidence by its NATURE, wherever it lives: any page soliciting money for the school, any donation or pledge link, any nonprofit/990 record, any named annual event, any vendor brand. Examples you will commonly meet, as illustrations not limits: Booster (formerly Boosterthon; mybooster.com and funrun.com links are proof), Apex (myapexevent.com means they are already a customer), Givebutter, Classful, PTBoard, GoFundMe, Zeffy, Cheddar Up, 99Pledges, Get Movin', Raise Craze, 990 filings on GuideStar/ProPublica/CauseIQ, catalog and cookie dough sales, book fairs, spirit nights, festivals, auctions, walk-a-thons.
+- Newsletters are prime sources: schools and PTAs publish fundraiser announcements, event recaps, volunteer calls, and budget notes in newsletters, often as PDF files, which you CAN read. Hunt for the current and previous school year's newsletters ("[school] newsletter", newsletter links on the school and PTA sites) and read what you find.
 - The school's own news or live-feed section and the parent organization's own pages outrank everything else. When such pages will not open directly, put the site's domain in the search query along with your terms; snippets will surface their content.
 - Time matters: include the year in time-sensitive queries, current year first, stepping back no further than ${oldestYear}. Date every fact you report; label anything over a year old as such, and never present old information as current.
 - Money and capacity language is a trail of its own: search and read for "budget", "funds", "investments", and "volunteer" alongside the school and PTO name. Budgets, meeting minutes, and annual reports reveal the real money picture; volunteer recruiting pleas reveal a strained parent base, which is direct burden-relief evidence for the angle.
@@ -199,7 +200,7 @@ RULES:
 - No em dashes.
 
 === DASHBOARD RULES ===
-- fundraisers_per_year = the count of DISTINCT fundraisers evidenced for the most recent complete school year (count each recurring event once). things_funded = the count of distinct uses of fundraising money evidenced in the dossier. Both counts come ONLY from dossier evidence; when nothing is evidenced, use 0 and let the lists be empty. Never invent entries to make the numbers look better.
+- fundraisers_per_year = the count of DISTINCT active fundraising campaigns or events evidenced in the TRAILING 12 MONTHS (count each recurring event once). Passive, always-on channels (DonorsChoose, Box Tops, grocery rewards, spirit wear stores) are NOT counted here; list them in the money trail instead. things_funded = the count of distinct uses of fundraising money evidenced in the dossier. Both counts come ONLY from dossier evidence; when nothing is evidenced, use 0 and let the lists be empty. Never invent entries to make the numbers look better.
 - character_ed_importance drives the angle: HIGH means this school already RUNS character-themed events, so Apex's leadership curriculum is a differentiator worth naming in the angle (the fitness event teaches leadership lessons all week, and it fits what they already do). MEDIUM means they have a values identity but no events; the angle may echo their values language without making character the lead. LOW or NONE means lead with ease and money and leave character education out of the pitch.
 
 Return ONLY valid JSON (no markdown fences, no preamble) with this exact structure:
@@ -248,7 +249,7 @@ Return ONLY valid JSON (no markdown fences, no preamble) with this exact structu
     "character_ed_importance": "high | medium | low | none_visible, from the dossier's CHARACTER EDUCATION judgment (high = character-themed events actually run; a values identity alone is medium; never lowered for lacking a named program)",
     "character_ed_basis": "One short line: the named program or evidence behind the rating, or 'nothing visible publicly'",
     "fundraisers_per_year": 0,
-    "fundraisers_counted": ["short label for each distinct fundraiser counted in the most recent complete year, e.g. 'Fun Run (fall)', 'Book Fair (spring)'"],
+    "fundraisers_counted": ["short label for each distinct active fundraiser counted in the trailing 12 months, e.g. 'Fun Run (fall)', 'Book Fair (spring)'"],
     "things_funded": 0,
     "things_funded_list": ["short label for each distinct thing their fundraising money buys, e.g. 'K-5 field trips', 'teacher technology'"]
   },
